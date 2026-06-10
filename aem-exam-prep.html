@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AEM Business Practitioner Expert — Practice Test</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f4f4f4;
+      color: #2c2c2c;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #eb1000;
+      color: white;
+      padding: 14px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    header .title-block .eyebrow {
+      font-size: 10px;
+      opacity: 0.75;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      margin-bottom: 3px;
+    }
+
+    header h1 {
+      font-size: 17px;
+      font-weight: 600;
+    }
+
+    #headerRight {
+      font-size: 13px;
+      opacity: 0.9;
+      text-align: right;
+    }
+
+    .progress-track {
+      background: rgba(0,0,0,0.15);
+      height: 3px;
+      position: sticky;
+      top: 51px;
+      z-index: 99;
+    }
+
+    .progress-fill {
+      background: #ffcb00;
+      height: 3px;
+      transition: width 0.35s ease;
+    }
+
+    .container {
+      max-width: 740px;
+      margin: 36px auto;
+      padding: 0 20px 60px;
+    }
+
+    /* START SCREEN */
+    .start-card {
+      background: white;
+      border-radius: 10px;
+      padding: 44px 40px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+    }
+
+    .start-card h2 {
+      font-size: 22px;
+      margin-bottom: 10px;
+    }
+
+    .start-card .description {
+      color: #555;
+      font-size: 15px;
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+
+    .domain-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 32px;
+    }
+
+    .pill {
+      background: #f0f0f0;
+      color: #444;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 5px 10px;
+      border-radius: 20px;
+    }
+
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .stat-box {
+      background: #fafafa;
+      border: 1px solid #e8e8e8;
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .stat-box .num {
+      font-size: 30px;
+      font-weight: 700;
+      color: #eb1000;
+    }
+
+    .stat-box .lbl {
+      font-size: 12px;
+      color: #888;
+      margin-top: 2px;
+    }
+
+    /* QUESTION CARD */
+    .question-card {
+      background: white;
+      border-radius: 10px;
+      padding: 32px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+    }
+
+    .q-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 22px;
+    }
+
+    .q-counter {
+      font-size: 13px;
+      color: #888;
+    }
+
+    .domain-tag {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      background: #f0f0f0;
+      color: #555;
+      padding: 4px 9px;
+      border-radius: 4px;
+    }
+
+    .q-text {
+      font-size: 17px;
+      font-weight: 500;
+      line-height: 1.55;
+      margin-bottom: 6px;
+    }
+
+    .q-hint {
+      font-size: 13px;
+      color: #999;
+      margin-bottom: 22px;
+    }
+
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      margin-bottom: 24px;
+    }
+
+    .option {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 13px 15px;
+      border: 2px solid #e5e5e5;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: border-color 0.12s, background 0.12s;
+      user-select: none;
+    }
+
+    .option:hover:not(.locked) {
+      border-color: #eb1000;
+      background: #fff7f6;
+    }
+
+    .option.selected {
+      border-color: #eb1000;
+      background: #fff3f2;
+    }
+
+    .option.result-correct {
+      border-color: #2d9e47;
+      background: #f0faf3;
+    }
+
+    .option.result-wrong {
+      border-color: #d93025;
+      background: #fdf2f2;
+    }
+
+    .option.result-missed {
+      border-color: #2d9e47;
+      background: #f5fdf7;
+      opacity: 0.75;
+    }
+
+    .option.locked {
+      cursor: default;
+    }
+
+    .opt-indicator {
+      width: 18px;
+      height: 18px;
+      border: 2px solid #ccc;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 1px;
+      transition: border-color 0.12s, background 0.12s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .opt-indicator.square {
+      border-radius: 4px;
+    }
+
+    .option.selected .opt-indicator,
+    .option.result-correct .opt-indicator,
+    .option.result-wrong .opt-indicator {
+      background: currentColor;
+    }
+
+    .option.selected .opt-indicator { border-color: #eb1000; background: #eb1000; }
+    .option.result-correct .opt-indicator { border-color: #2d9e47; background: #2d9e47; }
+    .option.result-wrong .opt-indicator { border-color: #d93025; background: #d93025; }
+    .option.result-missed .opt-indicator { border-color: #2d9e47; }
+
+    .opt-check {
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      display: none;
+    }
+
+    .option.selected .opt-check,
+    .option.result-correct .opt-check,
+    .option.result-wrong .opt-check { display: block; }
+
+    .opt-label {
+      font-size: 15px;
+      line-height: 1.45;
+    }
+
+    .opt-letter {
+      font-weight: 600;
+      color: #aaa;
+      margin-right: 5px;
+    }
+
+    /* FEEDBACK */
+    .feedback-box {
+      border-radius: 7px;
+      padding: 16px 18px;
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 24px;
+      display: none;
+    }
+
+    .feedback-box.correct {
+      background: #f0faf3;
+      border-left: 4px solid #2d9e47;
+    }
+
+    .feedback-box.incorrect {
+      background: #fdf2f2;
+      border-left: 4px solid #d93025;
+    }
+
+    .feedback-verdict {
+      font-weight: 700;
+      margin-bottom: 5px;
+      font-size: 14px;
+    }
+
+    .feedback-box.correct .feedback-verdict { color: #1e6e33; }
+    .feedback-box.incorrect .feedback-verdict { color: #8b1a1a; }
+    .feedback-box .feedback-text { color: #333; }
+
+    /* ACTIONS */
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .running-score {
+      font-size: 13px;
+      color: #aaa;
+    }
+
+    .btn {
+      padding: 11px 26px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.12s, opacity 0.12s;
+    }
+
+    .btn-primary {
+      background: #eb1000;
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) { background: #c40d00; }
+    .btn-primary:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    .btn-ghost {
+      background: #2c2c2c;
+      color: white;
+      margin-left: 10px;
+    }
+
+    .btn-ghost:hover { background: #444; }
+
+    /* RESULTS */
+    .results-card {
+      background: white;
+      border-radius: 10px;
+      padding: 44px 40px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+      text-align: center;
+    }
+
+    .results-card .eyebrow {
+      font-size: 11px;
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .big-score {
+      font-size: 80px;
+      font-weight: 700;
+      color: #eb1000;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .score-sub {
+      font-size: 16px;
+      color: #888;
+      margin-bottom: 12px;
+    }
+
+    .verdict-msg {
+      font-size: 15px;
+      font-weight: 500;
+      margin-bottom: 36px;
+    }
+
+    .breakdown-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+      gap: 12px;
+      margin-bottom: 36px;
+      text-align: left;
+    }
+
+    .bd-item {
+      background: #f8f8f8;
+      border-radius: 7px;
+      padding: 14px 16px;
+    }
+
+    .bd-domain {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #999;
+      margin-bottom: 5px;
+    }
+
+    .bd-score {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .bd-score .bd-of {
+      font-size: 13px;
+      font-weight: 400;
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="title-block">
+    <div class="eyebrow">Adobe Certification Prep</div>
+    <h1>AEM Business Practitioner Expert</h1>
+  </div>
+  <div id="headerRight"></div>
+</header>
+
+<div class="progress-track">
+  <div class="progress-fill" id="progressFill" style="width:0%"></div>
+</div>
+
+<div class="container">
+  <div id="app"></div>
+</div>
+
+<script>
+const ALL_QUESTIONS = [
+  {
+    id: 1, type: 'tf', domain: 'Architecture',
+    question: 'The AEM Dispatcher is responsible for replicating content from the Author instance to the Publish instance.',
+    options: ['True', 'False'],
+    correct: [1],
+    explanation: 'The Dispatcher is a caching and security layer that sits in front of the Publish instance — it never moves content from Author to Publish. That is handled by Replication Agents (classic AEM) or Sling Content Distribution (AEMaaCS).'
+  },
+  {
+    id: 2, type: 'mc', domain: 'Architecture',
+    question: 'In a standard AEM deployment, which best describes the request path when an end user visits a page that is already cached?',
+    options: [
+      'User → Author → Publish → Dispatcher',
+      'User → Dispatcher → Publish → Author',
+      'User → Dispatcher (cache hit — Publish is not contacted)',
+      'User → Publish → Dispatcher'
+    ],
+    correct: [2],
+    explanation: 'On a cache hit, the Dispatcher serves the static file directly without forwarding the request to Publish. On a cache miss the path is: User → Dispatcher → Publish. The Author instance is never in the public request path.'
+  },
+  {
+    id: 3, type: 'multi', domain: 'Architecture', selectCount: 2,
+    question: 'Which two AEM tiers should never be directly accessible from the public internet?',
+    options: ['Dispatcher', 'Author', 'Publish', 'CDN'],
+    correct: [1, 2],
+    explanation: 'Both Author and Publish should be shielded from direct public access. The Dispatcher (and often a CDN in front of it) is the intended public-facing layer. Exposing Publish bypasses Dispatcher security rules; exposing Author would hand the CMS directly to the internet.'
+  },
+  {
+    id: 4, type: 'mc', domain: 'Architecture',
+    question: 'An author publishes a page successfully but the live site still shows the old version 15 minutes later. What is the most likely cause?',
+    options: [
+      'The Author instance failed to save the draft before publish',
+      'The replication agent queue is paused or throwing an error',
+      'The Dispatcher cache was not invalidated after the publish event',
+      'The Publish instance is offline'
+    ],
+    correct: [2],
+    explanation: 'Stale content after a successful publish almost always points to Dispatcher cache invalidation failure. If replication had failed, the content would not have reached Publish at all. Cache invalidation sends a flush request from Publish to the Dispatcher — if that fails, old content persists indefinitely.'
+  },
+  {
+    id: 5, type: 'mc', domain: 'Architecture',
+    question: 'Where are replication agents configured in a classic AEM (on-premise) deployment?',
+    options: [
+      'On the Publish instance under Tools > Replication',
+      'On the Author instance under Tools > Deployment > Replication',
+      'In the Dispatcher httpd configuration files',
+      'In the OSGi console on both Author and Publish'
+    ],
+    correct: [1],
+    explanation: 'Replication agents — including the default agent (Author→Publish) and Dispatcher flush agents — are configured on the Author instance at Tools > Deployment > Replication. This is also where you pause queues, run connectivity tests, and view replication history.'
+  },
+  {
+    id: 6, type: 'tf', domain: 'Architecture',
+    question: 'In AEM as a Cloud Service, the Dispatcher has been removed entirely and replaced by a CDN.',
+    options: ['True', 'False'],
+    correct: [1],
+    explanation: 'False. AEMaaCS still uses the Dispatcher, but it is Adobe-managed as part of the cloud infrastructure. Customers configure Dispatcher rules as code (checked into the repository) and deploy them via Cloud Manager pipelines, rather than managing the server directly.'
+  },
+  {
+    id: 7, type: 'multi', domain: 'Architecture', selectCount: 2,
+    question: 'Which two statements about the AEM Dispatcher are correct?',
+    options: [
+      'It caches static renditions of pages served by the Publish instance',
+      'It handles user authentication and session management for the Author instance',
+      'It can be configured to block access to specific URL patterns as a security measure',
+      'It stores all page content in the JCR repository'
+    ],
+    correct: [0, 2],
+    explanation: 'The Dispatcher caches pages from Publish as static files and enforces allow/deny rules on URL patterns (e.g., blocking /crx, /system, /etc from public access). It has no role in Author authentication and does not use the JCR — that is the content repository on Author/Publish.'
+  },
+  {
+    id: 8, type: 'mc', domain: 'Architecture',
+    question: 'In AEM as a Cloud Service, what replaces traditional replication agents for distributing content from Author to Publish?',
+    options: [
+      'Adobe Campaign integration',
+      'Cloud Manager full-stack pipeline',
+      'Sling Content Distribution (SCD)',
+      'Dispatcher flush agents'
+    ],
+    correct: [2],
+    explanation: 'AEMaaCS uses the Sling Content Distribution framework instead of classic agent-based replication. SCD is managed by the platform and provides fast, reliable content distribution at cloud scale without the manual queue management required for traditional replication agents.'
+  },
+
+  // SITES: TEMPLATES
+  {
+    id: 9, type: 'mc', domain: 'Sites: Templates',
+    question: 'A template author wants to restrict which components page authors can insert into a specific region of an editable template. Where is this configured?',
+    options: [
+      'Page Properties > Advanced tab > Allowed Templates',
+      'Template Editor > Structure mode > Layout Container Policy',
+      'OSGi Configuration > Component Allowed List',
+      'Site Settings > Design > Allowed Components'
+    ],
+    correct: [1],
+    explanation: 'In the Template Editor, switching to Structure mode lets template authors select a container and open its Policy. The policy defines allowed components for that container. This is the correct modern approach with Editable Templates — no developer involvement needed.'
+  },
+  {
+    id: 10, type: 'mc', domain: 'Sites: Templates',
+    question: 'What is the primary advantage of Editable Templates over Static Templates?',
+    options: [
+      'Editable Templates render faster because they precompile to static HTML',
+      'Editable Templates can be created and modified by template authors without developer code changes',
+      'Editable Templates are the only template type supported in AEM as a Cloud Service',
+      'Editable Templates automatically translate page content into multiple languages'
+    ],
+    correct: [1],
+    explanation: 'Editable Templates empower template authors to define page structure, initial content, and component policies through the Template Editor UI — without writing code. Static Templates require developer involvement for any structural change, creating delivery bottlenecks.'
+  },
+  {
+    id: 11, type: 'mc', domain: 'Sites: Templates',
+    question: 'A content author cannot see the "Dark Background" style option for a Teaser component. A developer confirms the CSS class is deployed. What should a template author check?',
+    options: [
+      'Component Edit Dialog > Style tab',
+      'Template Policy for the Teaser component in the Template Editor',
+      'OSGi Configuration > Style System Manager',
+      'Page Properties > Design > Style Overrides'
+    ],
+    correct: [1],
+    explanation: 'The AEM Style System exposes styles to authors via Template Policies. Even if the CSS is deployed, a style option will not appear in the authoring UI unless it has been explicitly enabled in the component\'s policy within the Template Editor. Template Policy is the first place to check.'
+  },
+
+  // ASSETS
+  {
+    id: 12, type: 'mc', domain: 'Assets: Metadata',
+    question: 'A DAM administrator wants to require that all assets uploaded to a specific folder include a "Campaign Name" and "Expiration Date" field. Which feature should they configure?',
+    options: ['Smart Tags', 'Asset Reports', 'Metadata Schema', 'Collection Rules'],
+    correct: [2],
+    explanation: 'Metadata Schemas define the fields presented when viewing or uploading an asset, their types (text, date, dropdown), and whether they are required. You assign a schema to a folder so assets uploaded there present the correct form automatically.'
+  },
+  {
+    id: 13, type: 'multi', domain: 'Assets: Processing', selectCount: 2,
+    question: 'Which two outcomes can be produced by configuring an AEM Assets Processing Profile?',
+    options: [
+      'Generating image renditions at specified dimensions and formats',
+      'Enforcing required metadata fields on asset upload',
+      'Creating video encoding presets for Dynamic Media delivery',
+      'Defining user download permissions per asset MIME type'
+    ],
+    correct: [0, 2],
+    explanation: 'Processing Profiles automate asset transformations: image renditions (size, crop, format) and Dynamic Media video encoding presets. Metadata requirements belong to Metadata Schemas; download permissions are handled through user/group ACLs or Asset Share configurations.'
+  },
+  {
+    id: 14, type: 'mc', domain: 'Assets: Processing',
+    question: 'A Processing Profile has been created to generate three image renditions on upload. How do you ensure it runs automatically for all assets added to /content/dam/marketing?',
+    options: [
+      'Set it as the system default in OSGi configuration',
+      'Assign the Processing Profile directly to the folder in the folder\'s Properties',
+      'Add a matching tag to the profile that matches the folder name',
+      'Reference the profile in a Workflow Launcher scoped to that path'
+    ],
+    correct: [1],
+    explanation: 'Processing Profiles are applied per-folder. In the folder\'s Properties panel, you assign the profile under the Image Processing (or Video/Audio) tab. All new assets uploaded to that folder are then processed automatically without any additional configuration.'
+  },
+  {
+    id: 15, type: 'tf', domain: 'Assets: Processing',
+    question: 'AEM Assets Smart Tags use Adobe Sensei AI to automatically apply descriptive tags to image assets, reducing the need for manual tagging.',
+    options: ['True', 'False'],
+    correct: [0],
+    explanation: 'True. Smart Tags leverage Adobe Sensei\'s computer vision to analyze image content and apply relevant tags automatically. This improves asset discoverability in the DAM at scale. The feature requires a one-time configuration to connect to the Sensei service via Adobe Developer Console.'
+  },
+  {
+    id: 16, type: 'multi', domain: 'Assets: Dynamic Media', selectCount: 2,
+    question: 'Which two capabilities does Dynamic Media add to AEM Assets that are not part of core Assets functionality?',
+    options: [
+      'AI-powered automatic tagging of images (Smart Tags)',
+      'Adaptive video streaming with multiple quality renditions (HLS/DASH)',
+      'Smart Crop — AI-based automatic focal-point cropping for responsive delivery',
+      'Metadata schema enforcement on asset upload'
+    ],
+    correct: [1, 2],
+    explanation: 'Dynamic Media adds rich media delivery capabilities: adaptive video streaming (bandwidth-aware quality switching) and Smart Crop (Adobe Sensei detects the subject and crops accordingly across breakpoints). Smart Tags is a separate core AEM Assets feature; metadata schemas are also core Assets functionality.'
+  },
+
+  // FORMS
+  {
+    id: 17, type: 'mc', domain: 'Forms',
+    question: 'What is the purpose of a Form Data Model (FDM) in AEM Forms?',
+    options: [
+      'To define the visual layout and CSS styling of an adaptive form',
+      'To connect adaptive forms to external data sources such as REST APIs, SOAP services, or databases',
+      'To manage form submission routing and multi-step approval workflows',
+      'To configure email and SMS notification templates for form submissions'
+    ],
+    correct: [1],
+    explanation: 'A Form Data Model creates a unified data layer between AEM Forms and backend systems. It maps external data sources (REST, SOAP, OData, relational DB) into objects and services that adaptive forms can use for pre-fill and submission — without hardcoding integration logic into the form itself.'
+  },
+  {
+    id: 18, type: 'mc', domain: 'Forms',
+    question: 'In AEM Forms, what makes an Adaptive Form "adaptive"?',
+    options: [
+      'It automatically resizes its layout to match the user\'s screen resolution',
+      'Its fields, panels, and validation rules change dynamically based on user input and configured business rules',
+      'It adapts its color scheme to match the host site\'s design system automatically',
+      'It can be embedded in both AEM Sites pages and sent as standalone email forms'
+    ],
+    correct: [1],
+    explanation: '"Adaptive" refers to the form\'s dynamic behavior: fields can show or hide, panels can expand or collapse, and validation can change — all based on user input and rules defined in the Rules Editor. For example, selecting "Government Entity" could reveal a Tax ID field that is hidden for individuals.'
+  },
+
+  // WORKFLOWS
+  {
+    id: 19, type: 'tf', domain: 'Workflows',
+    question: 'A Workflow Launcher in AEM can be configured to automatically start a workflow when a specific type of change occurs on a JCR node — for example, when an asset is created in a particular DAM folder.',
+    options: ['True', 'False'],
+    correct: [0],
+    explanation: 'True. Workflow Launchers listen for JCR events (node created, modified, deleted) on a configured path pattern. When the event matches, the launcher triggers the specified workflow model automatically. This is the standard mechanism for asset processing workflows on upload.'
+  },
+  {
+    id: 20, type: 'multi', domain: 'Workflows', selectCount: 2,
+    question: 'Which two elements are always defined when building a Workflow Model in AEM?',
+    options: [
+      'Workflow Steps (participant steps, process steps, etc.)',
+      'Replication agent endpoints',
+      'Transitions between steps, including conditional split routing',
+      'Dispatcher flush rules for workflow-triggered publishes'
+    ],
+    correct: [0, 2],
+    explanation: 'A Workflow Model is a directed graph of Steps connected by Transitions. Steps define what happens at each stage (assign a task to a user, run an automated process, send a notification). Transitions define the flow between steps, including OR/AND splits for conditional branching. Replication and Dispatcher are separate concerns.'
+  },
+
+  // AEMaaCS
+  {
+    id: 21, type: 'tf', domain: 'AEMaaCS',
+    question: 'In AEM as a Cloud Service, administrators can access the Felix OSGi console on production environments to modify configurations in real time.',
+    options: ['True', 'False'],
+    correct: [1],
+    explanation: 'False. AEMaaCS does not expose the Felix console for live configuration changes. All OSGi configurations must be stored as .cfg.json files in the code repository and deployed through Cloud Manager pipelines. This enforces infrastructure-as-code and eliminates configuration drift between environments.'
+  },
+  {
+    id: 22, type: 'mc', domain: 'AEMaaCS',
+    question: 'What is the primary tool for managing code deployments and provisioning environments in AEM as a Cloud Service?',
+    options: ['CRX Package Manager', 'Cloud Manager', 'CRXDE Lite', 'AEM Developer Console'],
+    correct: [1],
+    explanation: 'Cloud Manager is Adobe\'s CI/CD platform for AEMaaCS. It manages environment provisioning, runs build/deployment pipelines, enforces quality gates (code quality, security, performance), and handles rollbacks. Package Manager and CRXDE Lite exist in AEMaaCS but cannot be used for production deployments.'
+  },
+  {
+    id: 23, type: 'multi', domain: 'AEMaaCS', selectCount: 3,
+    question: 'Which three pipeline types are available in Cloud Manager for AEM as a Cloud Service?',
+    options: [
+      'Full-stack pipeline (deploys compiled backend and frontend code together)',
+      'Direct FTP/SFTP upload pipeline',
+      'Front-end pipeline (deploys UI resources independently for faster iteration)',
+      'Config pipeline (deploys OSGi configurations and Dispatcher rules as standalone artifacts)',
+      'Database migration pipeline'
+    ],
+    correct: [0, 2, 3],
+    explanation: 'Cloud Manager offers three deployment pipeline types: full-stack (complete codebase), front-end (theme/UI resources without a full backend build), and config (OSGi configs and Dispatcher rules independently). This separation enables faster front-end iteration. FTP and database migration pipelines do not exist in AEMaaCS.'
+  },
+  {
+    id: 24, type: 'mc', domain: 'AEMaaCS',
+    question: 'Which statement best describes a key operational difference between AEM 6.5 (on-premise/Managed Services) and AEM as a Cloud Service?',
+    options: [
+      'AEMaaCS does not support Content Fragments or headless delivery',
+      'AEM 6.5 also requires Cloud Manager for all deployments',
+      'AEMaaCS receives continuous automated platform updates from Adobe; AEM 6.5 follows a Service Pack upgrade cycle',
+      'AEMaaCS replaces the JCR with a relational database for content storage'
+    ],
+    correct: [2],
+    explanation: 'AEMaaCS is an "evergreen" platform — Adobe continuously pushes updates, meaning customers always run the latest version without planning upgrade projects. AEM 6.5 follows a traditional Service Pack model requiring deliberate upgrade cycles. AEMaaCS still uses Apache Jackrabbit Oak / JCR for content storage.'
+  },
+  {
+    id: 25, type: 'multi', domain: 'AEMaaCS', selectCount: 2,
+    question: 'Which two statements about the Preview tier in AEM as a Cloud Service are correct?',
+    options: [
+      'Preview is a third tier between Author and Publish that allows content review before going live',
+      'Preview uses the exact same Dispatcher configuration as the Publish tier',
+      'Publishing to Preview is a deliberate, separate action from publishing to the live Publish tier',
+      'Preview is only available for AEM Assets, not AEM Sites content'
+    ],
+    correct: [0, 2],
+    explanation: 'AEMaaCS introduced a Preview tier as a staging layer between Author and the live Publish tier. Content can be published to Preview for stakeholder review before being promoted to live. Publishing to Preview and to Publish are separate, explicit actions. Preview has its own Dispatcher configuration distinct from Publish.'
+  },
+
+  // CONTENT SUPPLY CHAIN / GOVERNANCE
+  {
+    id: 26, type: 'mc', domain: 'Multi-Site Management',
+    question: 'A global organization manages 14 country websites from a single AEM instance. Content starts in a master site and regional teams need to localize it while inheriting shared global content. Which feature is purpose-built for this?',
+    options: [
+      'Content Fragments delivered via GraphQL per region',
+      'Experience Fragments exported to Adobe Target per locale',
+      'Multi-Site Manager (MSM) with Live Copies',
+      'Language Copy with Translation Workflow'
+    ],
+    correct: [2],
+    explanation: 'MSM is built for this pattern: a "blueprint" (master site) is rolled out as Live Copies to regional sites. Global changes propagate down via rollout; regional teams can create local overrides. Language Copy handles translation workflows — related but solving a different problem than MSM\'s inheritance model.'
+  },
+  {
+    id: 27, type: 'mc', domain: 'Multi-Site Management',
+    question: 'In AEM MSM, what does a "rollout" operation do?',
+    options: [
+      'Publishes all live copy pages to the Publish instance simultaneously',
+      'Pushes blueprint content changes down to one or more live copies',
+      'Translates blueprint content into the live copy\'s target language',
+      'Deploys the AEM codebase to a new environment via Cloud Manager'
+    ],
+    correct: [1],
+    explanation: 'A Rollout propagates changes from the MSM blueprint to its Live Copies according to the configured rollout settings. It can be triggered manually by an author or automatically via rollout configurations. "Publish" and "Deploy" are separate operations unrelated to MSM inheritance.'
+  },
+  {
+    id: 28, type: 'multi', domain: 'Content Fragments', selectCount: 2,
+    question: 'Which two scenarios are valid use cases for AEM Content Fragments?',
+    options: [
+      'Delivering structured product descriptions to a mobile app via AEM\'s GraphQL API',
+      'Building a page layout with hero image, navigation, and footer using drag-and-drop',
+      'Reusing a single article body across multiple AEM Sites pages and an email campaign',
+      'Configuring required metadata fields for DAM asset uploads'
+    ],
+    correct: [0, 2],
+    explanation: 'Content Fragments are structured, channel-agnostic content with no built-in layout. They are ideal for headless delivery via API/GraphQL and for reusing pure content across multiple channels. Page layout is the domain of page templates and components; metadata schemas are an Assets feature.'
+  },
+  {
+    id: 29, type: 'multi', domain: 'Content Fragments', selectCount: 2,
+    question: 'Which two statements correctly distinguish Content Fragments from Experience Fragments in AEM?',
+    options: [
+      'Content Fragments are structured, channel-agnostic content with no built-in layout or presentation layer',
+      'Experience Fragments can be exported to Adobe Target as HTML or JSON offers for A/B testing and personalization',
+      'Content Fragments are only available in AEMaaCS — they do not exist in AEM 6.x',
+      'Experience Fragments are stored as binary files in the Digital Asset Manager'
+    ],
+    correct: [0, 1],
+    explanation: 'Content Fragments = structured content, no layout, consumed via API or reference. Experience Fragments = page fragments with layout and design, built for omnichannel reuse including native Adobe Target export. Both features are available in AEM 6.x and AEMaaCS. Experience Fragments live under /content/experience-fragments, not in the DAM.'
+  },
+  {
+    id: 30, type: 'tf', domain: 'Personalization',
+    question: 'AEM Experience Fragments can be exported directly to Adobe Target and used as personalization offers in A/B tests and targeted activities.',
+    options: ['True', 'False'],
+    correct: [0],
+    explanation: 'True. Experience Fragments have native Adobe Target integration: you can export them from AEM directly to Target as HTML or JSON offers. This lets marketers use AEM-authored content in Target activities without manually copying content between systems.'
+  },
+  {
+    id: 31, type: 'mc', domain: 'Governance',
+    question: 'A content operations team needs to ensure no AEM Sites page goes live without approval from a legal reviewer. Which capability is most appropriate?',
+    options: [
+      'Dispatcher cache rules that block unreviewed content URLs',
+      'Replication agents with content-type filtering',
+      'A publish workflow model with a mandatory Participant Step assigned to the legal review group',
+      'OSGi bundle configuration to restrict publish permissions by content type'
+    ],
+    correct: [2],
+    explanation: 'Content governance gates are implemented through Workflows. A Participant Step assigned to the legal group ensures content cannot proceed to the publish replication step until a member of that group approves it. Dispatcher and replication rules control delivery mechanics, not editorial governance.'
+  },
+  {
+    id: 32, type: 'mc', domain: 'Governance',
+    question: 'In the AEM persona model, which role is responsible for defining which components are allowed in a template and which Style System options are available to content authors?',
+    options: ['Content Author', 'Developer', 'Template Author', 'DAM Administrator'],
+    correct: [2],
+    explanation: 'Template Authors sit between Developers and Content Authors in the AEM responsibility hierarchy. They configure Editable Templates — setting component policies and style options — through the Template Editor UI without writing code. Developers create the components; content authors use them within the bounds template authors define.'
+  },
+
+  // CORE CONCEPTS
+  {
+    id: 33, type: 'mc', domain: 'Core Concepts',
+    question: 'In AEM, where is the primary content repository for pages and assets stored?',
+    options: [
+      'A relational SQL database (MySQL or PostgreSQL)',
+      'The Java Content Repository (JCR), with authored content under /content',
+      'The Dispatcher file system cache on the web tier',
+      'An S3-compatible cloud object store'
+    ],
+    correct: [1],
+    explanation: 'AEM uses the Java Content Repository (JCR) — specifically Apache Jackrabbit Oak. All pages, assets, user data, and configurations are stored as nodes in the JCR hierarchy. The /content path conventionally holds authored content. (In AEMaaCS, binary asset data is offloaded to cloud object storage, but the JCR node structure remains.)'
+  },
+  {
+    id: 34, type: 'mc', domain: 'Core Concepts',
+    question: 'A content author reports that a newly installed component is not visible in the component browser on their page. The developer confirms the component is deployed and functional. What should be checked first?',
+    options: [
+      'Whether the component was compiled with the correct Java version',
+      'Whether the component is listed in the allowed components policy for the page\'s template',
+      'Whether the author has administrator-level permissions',
+      'Whether the Dispatcher cache needs to be flushed to expose new components'
+    ],
+    correct: [1],
+    explanation: 'Component visibility in the authoring UI is controlled by Template Policy. Even if a component is installed and working, it will not appear in the component browser unless it is explicitly allowed in the Layout Container policy for the template being used. This is always the first thing to verify.'
+  },
+  {
+    id: 35, type: 'mc', domain: 'Core Concepts',
+    question: 'Which of the following best describes the role of OSGi in AEM?',
+    options: [
+      'It is the database layer that stores page content in the JCR',
+      'It is the Java component framework that manages services, configurations, and lifecycle of AEM\'s application bundles',
+      'It is the front-end rendering engine responsible for turning HTL templates into HTML',
+      'It is Adobe\'s cloud deployment and CI/CD platform for AEMaaCS'
+    ],
+    correct: [1],
+    explanation: 'OSGi (implemented via Apache Felix) is the underlying Java application framework for AEM. It manages the lifecycle of bundles (JAR modules), wires together services, and provides the configuration layer that powers most AEM behavior. Understanding OSGi helps explain why configurations are per-environment and why bundle states matter during troubleshooting.'
+  }
+];
+
+// ─── State ───────────────────────────────────────────────────────────────────
+let questions = [];
+let idx = 0;
+let selected = [];
+let answered = false;
+let score = 0;
+let domainMap = {};
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function initDomains() {
+  domainMap = {};
+  questions.forEach(q => {
+    if (!domainMap[q.domain]) domainMap[q.domain] = { correct: 0, total: 0 };
+    domainMap[q.domain].total++;
+  });
+}
+
+function setProgress(pct) {
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+const LETTERS = ['A', 'B', 'C', 'D', 'E'];
+
+// ─── Start Screen ─────────────────────────────────────────────────────────────
+function renderStart() {
+  setProgress(0);
+  document.getElementById('headerRight').textContent = '';
+  const domains = [...new Set(ALL_QUESTIONS.map(q => q.domain))];
+  const pills = domains.map(d => `<span class="pill">${d}</span>`).join('');
+  document.getElementById('app').innerHTML = `
+    <div class="start-card">
+      <h2>AEM Business Practitioner Expert</h2>
+      <p class="description">
+        35 practice questions across Architecture, Configuration, AEMaaCS, and Content Governance —
+        weighted toward your identified gaps. Each question shows the correct answer and a plain-English
+        explanation after you submit.
+      </p>
+      <div class="stat-row">
+        <div class="stat-box"><div class="num">35</div><div class="lbl">Questions</div></div>
+        <div class="stat-box"><div class="num">3</div><div class="lbl">Question types</div></div>
+        <div class="stat-box"><div class="num">${domains.length}</div><div class="lbl">Topic areas</div></div>
+      </div>
+      <div class="domain-pills">${pills}</div>
+      <button class="btn btn-primary" onclick="startQuiz()">Start Practice Test</button>
+    </div>
+  `;
+}
+
+// ─── Quiz ─────────────────────────────────────────────────────────────────────
+function startQuiz() {
+  questions = shuffle(ALL_QUESTIONS);
+  idx = 0;
+  score = 0;
+  initDomains();
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = questions[idx];
+  const pct = (idx / questions.length) * 100;
+  setProgress(pct);
+  document.getElementById('headerRight').textContent = `${idx + 1} / ${questions.length}`;
+
+  let hint = '';
+  if (q.type === 'tf') hint = 'True or False';
+  else if (q.type === 'multi') hint = `Select ${q.selectCount} answers`;
+  else hint = 'Select one answer';
+
+  const optType = q.type === 'multi' ? 'square' : '';
+  const optionsHTML = q.options.map((opt, i) => `
+    <div class="option" id="opt-${i}" onclick="toggleOption(${i})">
+      <div class="opt-indicator ${optType}"><span class="opt-check">✓</span></div>
+      <span class="opt-label"><span class="opt-letter">${LETTERS[i]}.</span>${opt}</span>
+    </div>
+  `).join('');
+
+  document.getElementById('app').innerHTML = `
+    <div class="question-card">
+      <div class="q-meta">
+        <span class="q-counter">Question ${idx + 1} of ${questions.length}</span>
+        <span class="domain-tag">${q.domain}</span>
+      </div>
+      <div class="q-text">${q.question}</div>
+      <div class="q-hint">${hint}</div>
+      <div class="options">${optionsHTML}</div>
+      <div class="feedback-box" id="feedback"></div>
+      <div class="actions">
+        <div class="running-score" id="runningScore">Score: ${score} / ${idx}</div>
+        <div>
+          <button class="btn btn-primary" id="submitBtn" onclick="submitAnswer()" disabled>Check Answer</button>
+          <button class="btn btn-ghost" id="nextBtn" onclick="advance()" style="display:none">
+            ${idx < questions.length - 1 ? 'Next Question →' : 'See Results'}
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  selected = [];
+  answered = false;
+}
+
+function toggleOption(i) {
+  if (answered) return;
+  const q = questions[idx];
+  const el = document.getElementById(`opt-${i}`);
+
+  if (q.type === 'multi') {
+    if (selected.includes(i)) {
+      selected = selected.filter(x => x !== i);
+      el.classList.remove('selected');
+    } else {
+      selected.push(i);
+      el.classList.add('selected');
+    }
+    document.getElementById('submitBtn').disabled = selected.length !== q.selectCount;
+  } else {
+    selected = [i];
+    document.querySelectorAll('.option').forEach((el2, j) => {
+      el2.classList.toggle('selected', j === i);
+    });
+    document.getElementById('submitBtn').disabled = false;
+  }
+}
+
+function submitAnswer() {
+  if (answered) return;
+  answered = true;
+  const q = questions[idx];
+
+  const sortSel = [...selected].sort((a,b)=>a-b);
+  const sortCor = [...q.correct].sort((a,b)=>a-b);
+  const correct = sortSel.length === sortCor.length && sortSel.every((v,i) => v === sortCor[i]);
+
+  if (correct) {
+    score++;
+    domainMap[q.domain].correct++;
+  }
+
+  document.querySelectorAll('.option').forEach((el, i) => {
+    el.classList.add('locked');
+    el.classList.remove('selected');
+    const isSel = selected.includes(i);
+    const isCor = q.correct.includes(i);
+    if (isSel && isCor)  el.classList.add('result-correct');
+    if (isSel && !isCor) el.classList.add('result-wrong');
+    if (!isSel && isCor) el.classList.add('result-missed');
+  });
+
+  const fb = document.getElementById('feedback');
+  fb.style.display = 'block';
+  fb.className = `feedback-box ${correct ? 'correct' : 'incorrect'}`;
+  fb.innerHTML = `
+    <div class="feedback-verdict">${correct ? '✓ Correct' : '✗ Incorrect'}</div>
+    <div class="feedback-text">${q.explanation}</div>
+  `;
+
+  document.getElementById('submitBtn').style.display = 'none';
+  document.getElementById('nextBtn').style.display = 'inline-block';
+  document.getElementById('runningScore').textContent = `Score: ${score} / ${idx + 1}`;
+}
+
+function advance() {
+  idx++;
+  if (idx >= questions.length) renderResults();
+  else renderQuestion();
+}
+
+// ─── Results ──────────────────────────────────────────────────────────────────
+function renderResults() {
+  setProgress(100);
+  document.getElementById('headerRight').textContent = 'Complete';
+
+  const pct = Math.round((score / questions.length) * 100);
+  let msg, msgColor;
+  if (pct >= 80)      { msg = 'Strong performance — you are on track for the exam.'; msgColor = '#2d9e47'; }
+  else if (pct >= 65) { msg = 'Good foundation. Review the explanations for missed questions.'; msgColor = '#e07b00'; }
+  else                { msg = 'Revisit the domains with the lowest scores below — focus there first.'; msgColor = '#d93025'; }
+
+  const bdHTML = Object.entries(domainMap).map(([domain, data]) => {
+    const p = Math.round((data.correct / data.total) * 100);
+    const color = p >= 80 ? '#2d9e47' : p >= 60 ? '#e07b00' : '#d93025';
+    return `
+      <div class="bd-item">
+        <div class="bd-domain">${domain}</div>
+        <div class="bd-score" style="color:${color}">${data.correct}/${data.total} <span class="bd-of">${p}%</span></div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('app').innerHTML = `
+    <div class="results-card">
+      <div class="eyebrow">Practice Test Complete</div>
+      <div class="big-score">${pct}%</div>
+      <div class="score-sub">${score} of ${questions.length} correct</div>
+      <div class="verdict-msg" style="color:${msgColor}">${msg}</div>
+      <div class="breakdown-grid">${bdHTML}</div>
+      <button class="btn btn-primary" onclick="restartQuiz()">Retake with Shuffled Questions</button>
+    </div>
+  `;
+}
+
+function restartQuiz() {
+  questions = shuffle(ALL_QUESTIONS);
+  idx = 0;
+  score = 0;
+  initDomains();
+  renderQuestion();
+}
+
+// ─── Boot ─────────────────────────────────────────────────────────────────────
+renderStart();
+</script>
+</body>
+</html>
