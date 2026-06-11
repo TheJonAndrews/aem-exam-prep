@@ -642,9 +642,53 @@ const DOMAIN_MAP = {
   practice: { label: "Practice Exam", color: "#455A64" }
 };
 
+const SETUP_PATHS = [
+  {
+    id: "cloud",
+    title: "AEMaaCS via Cloud Manager",
+    subtitle: "Recommended — no local install required",
+    icon: "☁️",
+    color: "#0277BD",
+    lightColor: "#E1F5FE",
+    borderColor: "#90CAF9",
+    badge: "Recommended",
+    intro: "Adobe provides free sandbox programs in Cloud Manager. This gives you a fully managed AEMaaCS environment (author + publish + preview tiers) with no local setup.",
+    link: { label: "Open Cloud Manager ↗", url: "https://experience.adobe.com/#/@acsultimatesupport/cloud-manager/landing.html" },
+    steps: [
+      { id: "cm1", title: "Sign in to Experience Cloud", detail: "Go to experience.adobe.com and sign in with your Adobe ID." },
+      { id: "cm2", title: "Open Cloud Manager", detail: "Navigate to Cloud Manager using the link above, or search for 'Cloud Manager' in the Experience Cloud app switcher." },
+      { id: "cm3", title: "Create a Sandbox Program", detail: "Click 'Add Program' → select 'Set up a Sandbox'. Name it (e.g. 'AEM Exam Prep') and check AEM Sites under solutions. Click Save." },
+      { id: "cm4", title: "Wait for provisioning", detail: "Cloud Manager provisions Dev, Stage, and Production environments. This takes 10–30 minutes. Status indicators appear on the program card." },
+      { id: "cm5", title: "Access your Author environment", detail: "Once ready: open your program → Environments tab → click the Author URL. AEMaaCS uses your Adobe ID for login — no admin/admin credentials." },
+      { id: "cm6", title: "Verify access", detail: "Navigate to Tools → General → Templates to confirm full author access. You're ready to start the exercises." },
+    ]
+  },
+  {
+    id: "local",
+    title: "Local AEM SDK Instance",
+    subtitle: "Full control — runs on your machine",
+    icon: "💻",
+    color: "#2E7D32",
+    lightColor: "#EDF7EE",
+    borderColor: "#88C98A",
+    badge: "Offline-capable",
+    intro: "The AEM SDK quickstart JAR runs a full author instance locally. Faster iteration, no cloud dependency — requires JDK 11 and ~4 GB RAM.",
+    link: { label: "Open Software Distribution ↗", url: "https://experience.adobe.com/#/downloads/content/software-distribution" },
+    steps: [
+      { id: "lc1", title: "Download JDK 11", detail: "Go to Software Distribution (link above) → search 'OpenJDK 11'. Download for your OS, install it, and confirm with: java -version" },
+      { id: "lc2", title: "Download the AEM SDK", detail: "In Software Distribution, search 'AEM SDK'. Download the latest AEM as a Cloud Service SDK ZIP and extract it — the quickstart JAR is inside." },
+      { id: "lc3", title: "Create a working directory", detail: "Create a dedicated folder:\nmkdir ~/aem-local && cd ~/aem-local\nCopy the quickstart JAR into this folder." },
+      { id: "lc4", title: "Start the author instance", detail: "Run:\njava -jar aem-sdk-quickstart-*.jar -r author\n\nFirst startup takes 5–15 minutes. A browser tab opens automatically when AEM is ready." },
+      { id: "lc5", title: "Log in", detail: "Go to http://localhost:4502 — credentials are admin / admin. You should land on the AEM navigation screen." },
+      { id: "lc6", title: "Verify and bookmark", detail: "Navigate to Tools → General → Templates to confirm full access. Bookmark localhost:4502 and localhost:4502/system/console (Felix OSGi console)." },
+    ]
+  }
+];
+
 export default function AEMStudyTracker() {
   const [completedExercises, setCompletedExercises] = useState({});
   const [completedSlots, setCompletedSlots] = useState({});
+  const [completedSetupSteps, setCompletedSetupSteps] = useState({});
   const [activeTab, setActiveTab] = useState("dashboard");
   const [activeDomain, setActiveDomain] = useState("business");
   const [expandedExercise, setExpandedExercise] = useState(null);
@@ -682,6 +726,19 @@ export default function AEMStudyTracker() {
     save(completedExercises, updated, studyNotes);
   };
 
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("aem_tracker_setup");
+      if (saved) setCompletedSetupSteps(JSON.parse(saved));
+    } catch (e) {}
+  }, []);
+
+  const toggleSetupStep = (id) => {
+    const updated = { ...completedSetupSteps, [id]: !completedSetupSteps[id] };
+    setCompletedSetupSteps(updated);
+    try { localStorage.setItem("aem_tracker_setup", JSON.stringify(updated)); } catch (e) {}
+  };
+
   const saveNote = (id) => {
     const updated = { ...studyNotes, [id]: noteInput };
     setStudyNotes(updated);
@@ -705,6 +762,8 @@ export default function AEMStudyTracker() {
   };
 
   const slotsCompleted = CALENDAR_SLOTS.filter((_, i) => completedSlots[i]).length;
+
+  const sandboxReady = SETUP_PATHS.some(p => p.steps.every(s => completedSetupSteps[s.id]));
 
   const difficultyColor = (d) => d === "Easy" ? "#2E7D32" : d === "Medium" ? "#E65100" : "#C94F2C";
 
@@ -751,6 +810,7 @@ export default function AEMStudyTracker() {
       <div style={{ background: "white", borderBottom: "1px solid #E2E8F0" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 28px", display: "flex", gap: 0, overflowX: "auto" }}>
         {[
+          { id: "prereqs", label: "🚀 Setup Guide" },
           { id: "dashboard", label: "📋 Dashboard" },
           { id: "schedule", label: "📅 Study Schedule" },
           { id: "exercises", label: "🧪 Exercises" },
@@ -766,9 +826,106 @@ export default function AEMStudyTracker() {
 
       <div style={{ padding: "24px 28px", maxWidth: 1100, margin: "0 auto" }}>
 
+        {/* SETUP GUIDE */}
+        {activeTab === "prereqs" && (
+          <div>
+            <div style={{ background: "linear-gradient(135deg, #0F3460, #1B6CA8)", borderRadius: 12, padding: "24px 28px", marginBottom: 28, color: "white" }}>
+              <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 6 }}>Before You Begin: Set Up Your Sandbox</div>
+              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.8)", lineHeight: 1.6 }}>All exercises require a live AEM environment. Choose one path below — Cloud Manager is recommended for most learners.</div>
+              {sandboxReady && (
+                <div style={{ marginTop: 12, background: "rgba(104,211,145,0.2)", border: "1px solid rgba(104,211,145,0.5)", borderRadius: 8, padding: "8px 14px", fontSize: 13, color: "#68D391", fontWeight: 600, display: "inline-block" }}>
+                  ✓ Sandbox setup complete — you're ready to start the exercises
+                </div>
+              )}
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(440px, 1fr))", gap: 24, marginBottom: 24 }}>
+              {SETUP_PATHS.map(path => {
+                const stepsComplete = path.steps.filter(s => completedSetupSteps[s.id]).length;
+                const allDone = stepsComplete === path.steps.length;
+                return (
+                  <div key={path.id} style={{ background: "white", borderRadius: 12, boxShadow: "0 1px 3px rgba(0,0,0,0.08)", overflow: "hidden", border: `2px solid ${allDone ? path.color : "transparent"}` }}>
+                    <div style={{ background: path.lightColor, borderBottom: `1px solid ${path.borderColor}`, padding: "18px 20px" }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8, marginBottom: 10 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                          <span style={{ fontSize: 26 }}>{path.icon}</span>
+                          <div>
+                            <div style={{ fontWeight: 800, fontSize: 15, color: path.color }}>{path.title}</div>
+                            <div style={{ fontSize: 12, color: "#718096", marginTop: 1 }}>{path.subtitle}</div>
+                          </div>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <span style={{ background: path.color, color: "white", fontSize: 11, fontWeight: 700, borderRadius: 12, padding: "3px 10px" }}>{path.badge}</span>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: allDone ? "#2E7D32" : path.color }}>{stepsComplete}/{path.steps.length}</span>
+                        </div>
+                      </div>
+                      <div style={{ background: path.borderColor, borderRadius: 6, height: 5, overflow: "hidden", marginBottom: 10 }}>
+                        <div style={{ height: "100%", background: path.color, borderRadius: 6, width: `${(stepsComplete / path.steps.length) * 100}%`, transition: "width 0.4s ease" }} />
+                      </div>
+                      <div style={{ fontSize: 13, color: "#4A5568", lineHeight: 1.5 }}>{path.intro}</div>
+                    </div>
+                    <div style={{ padding: "16px 20px" }}>
+                      <div style={{ marginBottom: 14 }}>
+                        <a href={path.link.url} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", background: path.lightColor, border: `1px solid ${path.borderColor}`, borderRadius: 8, fontSize: 12, fontWeight: 700, color: path.color, textDecoration: "none" }}>
+                          {path.link.label}
+                        </a>
+                      </div>
+                      <div style={{ display: "grid", gap: 8 }}>
+                        {path.steps.map((step, i) => {
+                          const done = completedSetupSteps[step.id];
+                          return (
+                            <div key={step.id} style={{ display: "flex", gap: 12, alignItems: "flex-start", padding: "12px 14px", background: done ? "#F0FFF4" : "#F7F8FA", borderRadius: 10, border: `1px solid ${done ? "#C6F6D5" : "#E2E8F0"}` }}>
+                              <button onClick={() => toggleSetupStep(step.id)} style={{ width: 26, height: 26, borderRadius: "50%", border: `2px solid ${done ? "#48BB78" : "#CBD5E0"}`, background: done ? "#48BB78" : "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1, fontSize: 12, color: "white", fontWeight: 800 }}>
+                                {done ? "✓" : ""}
+                              </button>
+                              <div style={{ flex: 1 }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                                  <div style={{ width: 20, height: 20, borderRadius: "50%", background: done ? "#48BB78" : path.color, color: "white", fontSize: 10, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{i + 1}</div>
+                                  <div style={{ fontWeight: 700, fontSize: 13, color: done ? "#276749" : "#2D3748", textDecoration: done ? "line-through" : "none" }}>{step.title}</div>
+                                </div>
+                                <div style={{ fontSize: 12, color: "#718096", lineHeight: 1.6, paddingLeft: 28, whiteSpace: "pre-line" }}>{step.detail}</div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      {allDone && (
+                        <div style={{ marginTop: 14, background: "#F0FFF4", border: "1px solid #9AE6B4", borderRadius: 10, padding: "12px 14px", fontSize: 13, fontWeight: 700, color: "#276749", textAlign: "center" }}>
+                          ✓ Setup complete — head to the Dashboard to begin
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div style={{ background: "#FFFBEB", border: "1px solid #F6E05E", borderRadius: 12, padding: 18 }}>
+              <div style={{ fontWeight: 700, fontSize: 14, color: "#744210", marginBottom: 10 }}>💡 Which path should I choose?</div>
+              <div style={{ display: "grid", gap: 8, fontSize: 13, color: "#4A5568", lineHeight: 1.6 }}>
+                <div><strong>Cloud Manager:</strong> Best for most learners. No JDK setup, always on the latest AEMaaCS release, and mirrors exactly what customers run. Requires an Adobe ID and access to a Cloud Manager organization.</div>
+                <div><strong>Local SDK:</strong> Best if you need to work offline or want to experiment freely without risk to a shared environment. Requires JDK 11, ~4 GB RAM, and ~10 GB disk space.</div>
+                <div style={{ color: "#718096" }}>Both paths give you the same AEM features needed for every exercise in this tracker.</div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* DASHBOARD */}
         {activeTab === "dashboard" && (
           <div>
+            {!sandboxReady && (
+              <div style={{ background: "#EBF8FF", border: "1px solid #90CDF4", borderRadius: 12, padding: "14px 18px", marginBottom: 24, display: "flex", alignItems: "center", gap: 14 }}>
+                <span style={{ fontSize: 22 }}>🚀</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 700, fontSize: 14, color: "#2B6CB0" }}>Set up your sandbox before starting</div>
+                  <div style={{ fontSize: 13, color: "#4A5568", marginTop: 2 }}>The exercises require a live AEM environment — Cloud Manager or a local SDK instance.</div>
+                </div>
+                <button onClick={() => setActiveTab("prereqs")} style={{ padding: "8px 16px", background: "#2B6CB0", color: "white", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>
+                  Setup Guide →
+                </button>
+              </div>
+            )}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16, marginBottom: 28 }}>
               {[
                 { label: "Exercises Complete", value: `${completedCount}/${totalExercises}`, sub: `${progress}% done`, color: "#E94560" },
