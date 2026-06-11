@@ -767,6 +767,22 @@ export default function AEMStudyTracker() {
 
   const difficultyColor = (d) => d === "Easy" ? "#2E7D32" : d === "Medium" ? "#E65100" : "#C94F2C";
 
+  const exerciseLookup = {};
+  DOMAINS.forEach(d => {
+    d.exercises.forEach(ex => { exerciseLookup[ex.id] = { exercise: ex, tab: "exercises", domain: d.id }; });
+  });
+  ADDITIONAL_TOPICS.forEach(t => {
+    t.exercises.forEach(ex => { exerciseLookup[ex.id] = { exercise: ex, tab: "additional", domain: null }; });
+  });
+
+  const navigateToExercise = (id) => {
+    const entry = exerciseLookup[id];
+    if (!entry) return;
+    setActiveTab(entry.tab);
+    if (entry.domain) setActiveDomain(entry.domain);
+    setExpandedExercise(id);
+  };
+
   return (
     <div style={{ fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", background: "#F7F8FA", minHeight: "100vh", color: "#1A1A2E" }}>
       {/* Header */}
@@ -1020,12 +1036,23 @@ export default function AEMStudyTracker() {
                               {" · "}
                               <span>{slot.time}</span>
                             </div>
+                            {slot.exerciseIds.length > 0 && (
+                              <div style={{ display: "flex", gap: 4, marginTop: 7, flexWrap: "wrap" }}>
+                                {slot.exerciseIds.map(id => {
+                                  const entry = exerciseLookup[id];
+                                  if (!entry) return null;
+                                  const exDone = completedExercises[id];
+                                  const exColor = entry.domain ? (DOMAIN_MAP[entry.domain]?.color || "#718096") : "#E65100";
+                                  const title = entry.exercise.title.length > 30 ? entry.exercise.title.slice(0, 27) + "…" : entry.exercise.title;
+                                  return (
+                                    <button key={id} onClick={() => navigateToExercise(id)} style={{ fontSize: 11, color: exDone ? "#276749" : exColor, background: exDone ? "#F0FFF4" : "white", border: `1px solid ${exDone ? "#9AE6B4" : "#E2E8F0"}`, borderRadius: 6, padding: "3px 9px", cursor: "pointer", fontWeight: 600, whiteSpace: "nowrap" }}>
+                                      {exDone ? "✓ " : ""}{title} →
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            )}
                           </div>
-                          {slot.exerciseIds.length > 0 && (
-                            <div style={{ fontSize: 11, color: "#718096", background: "#EDF2F7", borderRadius: 6, padding: "3px 8px", whiteSpace: "nowrap" }}>
-                              {slot.exerciseIds.length} exercise{slot.exerciseIds.length !== 1 ? "s" : ""}
-                            </div>
-                          )}
                           {slot.domain === "practice" && (
                             <div style={{ fontSize: 11, background: "#E53E3E", color: "white", borderRadius: 6, padding: "3px 8px", fontWeight: 700 }}>EXAM SIM</div>
                           )}
