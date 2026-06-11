@@ -711,7 +711,8 @@ export default function AEMStudyTracker() {
   return (
     <div style={{ fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", background: "#F7F8FA", minHeight: "100vh", color: "#1A1A2E" }}>
       {/* Header */}
-      <div style={{ background: "linear-gradient(135deg, #1A1A2E 0%, #16213E 60%, #0F3460 100%)", padding: "24px 28px 20px", color: "white" }}>
+      <div style={{ background: "linear-gradient(135deg, #1A1A2E 0%, #16213E 60%, #0F3460 100%)", color: "white" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "24px 28px 20px" }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
           <div>
             <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, color: "#E94560", textTransform: "uppercase", marginBottom: 6 }}>Adobe Certification Prep</div>
@@ -743,10 +744,12 @@ export default function AEMStudyTracker() {
             );
           })}
         </div>
+        </div>
       </div>
 
       {/* Tab nav */}
-      <div style={{ background: "white", borderBottom: "1px solid #E2E8F0", padding: "0 28px", display: "flex", gap: 0, overflowX: "auto" }}>
+      <div style={{ background: "white", borderBottom: "1px solid #E2E8F0" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 28px", display: "flex", gap: 0, overflowX: "auto" }}>
         {[
           { id: "dashboard", label: "📋 Dashboard" },
           { id: "schedule", label: "📅 Study Schedule" },
@@ -758,9 +761,10 @@ export default function AEMStudyTracker() {
             {tab.label}
           </button>
         ))}
+        </div>
       </div>
 
-      <div style={{ padding: "24px 28px", maxWidth: 1100 }}>
+      <div style={{ padding: "24px 28px", maxWidth: 1100, margin: "0 auto" }}>
 
         {/* DASHBOARD */}
         {activeTab === "dashboard" && (
