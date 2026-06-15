@@ -813,6 +813,9 @@ export default function AEMStudyTracker() {
           <div style={{ textAlign: "right" }}>
             <div style={{ fontSize: 36, fontWeight: 900, color: "#E94560", lineHeight: 1 }}>{progress}%</div>
             <div style={{ fontSize: 11, color: "#A0AEC0", marginTop: 2 }}>{completedCount}/{totalExercises} exercises done</div>
+            <a href="/release-notes.html" style={{ display: "inline-block", marginTop: 8, fontSize: 11, color: "rgba(255,255,255,0.5)", textDecoration: "none", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 4, padding: "2px 8px", letterSpacing: 0.3 }}>
+              What's New · v1.2
+            </a>
           </div>
         </div>
 
