@@ -38,15 +38,19 @@ const DOMAINS = [
         difficulty: "Medium",
         path: "Assets → Files",
         steps: [
-          "Create a Content Fragment using a simple model (title + body text)",
-          "Create an Experience Fragment with a variation under Sites",
-          "Add the Content Fragment to a page via the CF component",
-          "Add the Experience Fragment to a different page via the XF component",
-          "Expose the CF via the AEM Content Services API endpoint (/api/assets)",
-          "Ask: If a client needs structured data on web AND mobile API — which do you recommend? (Answer: CF)",
-          "Ask: If a client needs a reusable designed promo banner across pages — which? (Answer: XF)"
+          "PREREQUISITE — Create a Content Fragment Model: Go to Tools → General → Content Fragment Models. Select your project's configuration folder. Click Create → name it 'Article Model'.",
+          "In the Article Model editor, drag in these field types from the right panel: Single-line text (label it 'Title'), Multi-line text (label it 'Body'), Single-line text (label it 'Author'). Click Save. Then toggle the model to Enabled.",
+          "Create a Content Fragment: Go to Assets → Files → navigate to a folder → Create → Content Fragment → select 'Article Model'. Name it 'My First CF'. Fill in title, body, and author. Save & Close.",
+          "Create an Experience Fragment: Go to Sites → Experience Fragments → Create → Experience Fragment. Choose the 'Web' variation template. Name it 'Promo Banner'. Open it and add an Image and a Text component. Author some content.",
+          "IMPORTANT: Before an XF can be displayed on a page, it must be published. Select 'Promo Banner' in the Experience Fragments console → Manage Publication → Publish Now. Wait for confirmation.",
+          "Add the CF to a page: Open a test page in Edit mode → drag in a Content Fragment component → click the wrench to configure → browse to your 'My First CF' → save. Preview the page to confirm it renders.",
+          "Add the XF to a different page: Open another test page → drag in an Experience Fragment component → configure → set Fragment Path to your 'Promo Banner' XF. Leave Variation Name blank to use the Master variation. Save and preview.",
+          "If XF variations are not displaying: (1) confirm the XF is published, (2) verify the Fragment Path is exactly correct — copy it from the Experience Fragments console, (3) confirm the XF component is in the template's allowed components policy.",
+          "Connect the CF to the API endpoint: AEM exposes CFs via the Assets HTTP API. The URL pattern is: http://localhost:4502/api/assets/[dam-path-to-your-cf].json — for example, if your CF is at /content/dam/demo-site/my-first-cf, open: http://localhost:4502/api/assets/demo-site/my-first-cf.json",
+          "You'll see the CF returned as JSON — this is exactly how a mobile app or headless front-end consumes it. Note the 'properties' object containing your title, body, and author fields.",
+          "Decision check: Client needs structured product data for web AND mobile app → CF or XF? (CF — channel-agnostic, API-consumable). Client needs a reusable designed promo banner across pages → CF or XF? (XF — carries layout and visual design)."
         ],
-        keyInsight: "Content Fragments = headless/structured, channel-agnostic. Experience Fragments = designed layout sections reused across pages. The exam gives scenarios — you must choose."
+        keyInsight: "Content Fragments require a Model first (Tools → General → Content Fragment Models). Experience Fragments must be published before the XF component can render them — this is the most common mistake. CF API endpoint: /api/assets/[dam-path].json. CF = headless structured data. XF = reusable designed layout."
       },
       {
         id: "b2",
@@ -145,15 +149,19 @@ const DOMAINS = [
         difficulty: "Medium",
         path: "Tools → General → Templates",
         steps: [
-          "Create a folder under /conf/[your-project]/settings/wcm/templates",
-          "Create a new Page template → open in Structure mode",
-          "Add a Layout Container → click the Policy icon (wrench)",
-          "Create a policy: allow only Text, Image, and Button components",
-          "Switch to Initial Content mode → add placeholder text",
-          "Enable the template, then create a page using it under /content",
-          "Verify only your allowed components appear in the component browser"
+          "Go to Tools → General → Templates. You will see a list of configuration folders.",
+          "Click Create → Configuration Folder. Name it after your project (e.g. 'demo-site'). This creates /conf/demo-site in the JCR — this is where all your template configs live.",
+          "Open your new folder → click Create → Page Template → choose 'Empty Page' as the template type → name it 'Basic Page'.",
+          "The template opens in Structure mode. Structure mode defines the locked scaffold — components you add here appear on every page and cannot be moved or deleted by page authors.",
+          "Click the Layout Container (blue outline). On the left-side toolbar that appears, click the component policy icon — it looks like a hamburger menu with a gear symbol (≡⚙), not a wrench.",
+          "In the policy dialog, click the + icon to create a new policy. Name it 'Restricted Policy'. Under Allowed Components, expand your project group and check only: Text, Image, and Button. Save.",
+          "Click the page-mode icon in the top-left and switch to 'Initial Content' mode. Add a Title component and type placeholder text. This is the default content authors see when they create a new page from this template.",
+          "Switch back to Structure mode. At the top, click Enable to activate the template for use.",
+          "Go to Sites → navigate to your site → Create → Page → you should see 'Basic Page' available. Create a test page.",
+          "Open the test page in Edit mode and open the component browser (+ icon). Verify that only Text, Image, and Button appear — all other components should be absent.",
+          "Now go back to the template policy and add one more component (e.g. Teaser). Return to the page and confirm it appears — this demonstrates how a policy change instantly affects all pages using that template."
         ],
-        keyInsight: "Templates live under /conf. Policies are shared references — change one policy and it affects all templates/pages using it. This is the governance mechanism."
+        keyInsight: "Templates live under /conf/[project]/settings/wcm/templates — not /apps or /content. Structure mode = locked scaffold. Policies are shared references: one policy update affects every template and page that uses it. The policy icon in Structure mode is a hamburger with a gear (≡⚙)."
       },
       {
         id: "a2",
@@ -162,16 +170,19 @@ const DOMAINS = [
         difficulty: "Medium",
         path: "Tools → Security → Groups / Users",
         steps: [
-          "Create a group 'content-editors-demo' in Tools → Security → Groups",
-          "Create a test user, add them to content-editors-demo",
-          "Open Tools → Security → Permissions → find /content/[your-site]",
-          "Grant content-editors-demo: read + modify on the site path",
-          "Deny content-editors-demo on /content/dam",
-          "Log in as the test user in incognito — test page edit (should work)",
-          "Attempt to access Assets (should be blocked)",
-          "Explore: administrators, content-authors, dam-users, workflow-users groups"
+          "Go to Tools → Security → Groups → click Create. Name the group 'content-editors-demo'. Save.",
+          "Go to Tools → Security → Users → click Create. Set username: 'testauthor', password: 'Test1234!' (remember this). Save.",
+          "Open the testauthor user → click the Groups tab → search for 'content-editors-demo' → add it. Save.",
+          "Go to Tools → Security → Permissions (or navigate directly to /useradmin). In the search field, find your group 'content-editors-demo'.",
+          "Click the path /content/[your-site] → add an Allow ACE for content-editors-demo with privileges: jcr:read, jcr:modifyProperties, rep:write. This allows reading and editing pages.",
+          "Add a Deny ACE for content-editors-demo on the path /content/dam. Deny overrides any inherited allow — the user will be blocked from Assets regardless of parent path permissions.",
+          "To test the permissions: open a Private/Incognito browser window → go to http://localhost:4502 → log in as testauthor / Test1234!",
+          "Note: AEM's built-in impersonation feature (the 'Impersonate' button in user management) may throw an error on local SDK instances — this is expected. Always use incognito login for reliable permission testing locally.",
+          "While logged in as testauthor: navigate to Sites and try editing a page at your site path. It should succeed.",
+          "Try navigating to Assets (/assets.html or the Assets rail). It should be inaccessible or show no content — the deny on /content/dam is working.",
+          "Back as admin: browse Tools → Security → Groups and explore: content-authors (default page authors), dam-users (DAM access), workflow-users (can initiate workflows), administrators (full access). Note what each group grants by default."
         ],
-        keyInsight: "ACL inheritance: deny overrides allow. Know jcr:read, jcr:modifyProperties, rep:write. The exam presents a business need — you assign the right group."
+        keyInsight: "Deny always overrides allow in AEM's ACL model. The three key privileges: jcr:read (see content), jcr:modifyProperties (edit properties), rep:write (create/delete nodes). AEM's UI impersonation may not work on local SDK — use incognito windows for testing. The exam gives you a business scenario and asks which group or privilege applies."
       },
       {
         id: "a3",
@@ -318,15 +329,20 @@ const DOMAINS = [
         difficulty: "Easy",
         path: "Concept exercise — no UI required",
         steps: [
-          "For each scenario, write down which AEM feature you'd recommend:",
-          "Scenario 1: Client needs to reuse a hero banner on 20 pages → ?",
-          "Scenario 2: Client needs structured product data consumed by mobile app and web → ?",
-          "Scenario 3: Client has 5 country sites sharing 80% content, 20% localized → ?",
-          "Scenario 4: Client needs to prepare a campaign site 2 weeks before launch → ?",
-          "Scenario 5: Client needs 3-step content approval before publish → ?",
-          "Answers: XF, CF, MSM/Live Copy, Launch, Workflow"
+          "Scenario 1 — A digital agency needs to reuse a designed hero banner (image + headline + CTA button) across 20 pages. When the banner is updated, all 20 pages should reflect the change automatically.",
+          "Answer: Experience Fragment (XF). WHY: XFs are designed layout sections stored once and referenced many times. Edit the XF, and every page that includes it updates automatically. CFs carry no layout — they're data only.",
+          "Scenario 2 — A retailer needs product descriptions to appear on the website AND feed a mobile app via REST API. The same content must power both channels.",
+          "Answer: Content Fragment (CF). WHY: CFs are channel-agnostic structured data. The web page uses the CF component; the mobile app calls /api/assets/[path].json. XFs are tied to web layout and cannot be consumed by an API.",
+          "Scenario 3 — A government agency runs 5 country sites. 80% of content is shared policy/program content; 20% is country-specific. The central team needs to push updates to all sites at once.",
+          "Answer: MSM / Live Copy. WHY: MSM creates a Blueprint (master site) and Live Copies (country sites). Rollout pushes Blueprint changes to all Live Copies automatically. Country editors can cancel inheritance on the 20% they need to localize.",
+          "Scenario 4 — A marketing team is building a campaign microsite that goes live in exactly 2 weeks. Content must be authored now without affecting the current live site.",
+          "Answer: Launch. WHY: A Launch is a staging overlay on existing pages. Authors work inside the Launch; the live site is completely untouched. On go-live date, the Launch is promoted and the new content goes live.",
+          "Scenario 5 — A legal team requires that all press release pages be reviewed by an editor, then a manager, then a legal reviewer before publishing. No page can go live without all three approvals.",
+          "Answer: Workflow. WHY: Workflow models define sequential participant steps (human approvals) and process steps (e.g., Activate Page). Each approver sees the item in their Workflow Inbox and must complete their step before it advances.",
+          "Bonus — A company wants to A/B test two versions of a landing page for 30 days, showing version A to 50% of visitors and version B to the other 50%.",
+          "Answer: Launch (for the alternate content version) + ContextHub or Adobe Target integration (for the traffic split and targeting logic). Launches create the variant; personalization tools control which visitors see which version."
         ],
-        keyInsight: "The Education domain tests whether you can map features to business needs. Practice these scenario mappings until they're reflexive."
+        keyInsight: "Five mappings to memorize: XF = designed reusable layout section. CF = structured headless data (API-consumable). MSM = persistent multi-site inheritance with rollout. Launch = future-dated campaign staging. Workflow = sequential human approval process. The exam gives a business scenario — you pick the feature."
       }
     ]
   },
