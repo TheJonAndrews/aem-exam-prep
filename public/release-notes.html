@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Release Notes — AEM Exam Prep</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #F7F8FA; color: #2c2c2c; min-height: 100vh; }
+    header { background: #2D3748; color: white; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+    .header-title { font-size: 15px; font-weight: 700; letter-spacing: 0.2px; }
+    .header-sub { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 2px; }
+    main { max-width: 760px; margin: 0 auto; padding: 40px 24px 80px; }
+    .page-title { font-size: 26px; font-weight: 800; color: #1A202C; margin-bottom: 6px; }
+    .page-sub { font-size: 14px; color: #718096; margin-bottom: 40px; }
+    .release { background: white; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); margin-bottom: 28px; overflow: hidden; }
+    .release-header { padding: 18px 24px; display: flex; align-items: center; gap: 14px; border-bottom: 1px solid #EDF2F7; }
+    .version-badge { font-size: 13px; font-weight: 800; color: white; background: #2D3748; padding: 4px 10px; border-radius: 6px; white-space: nowrap; }
+    .version-badge.latest { background: #E65100; }
+    .release-title { font-size: 15px; font-weight: 700; color: #1A202C; }
+    .release-date { font-size: 12px; color: #718096; margin-top: 2px; }
+    .release-body { padding: 20px 24px; }
+    .change-group { margin-bottom: 20px; }
+    .change-group:last-child { margin-bottom: 0; }
+    .group-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #718096; margin-bottom: 10px; }
+    .change-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .change-item { display: flex; gap: 10px; font-size: 14px; line-height: 1.55; color: #2D3748; }
+    .change-icon { flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; margin-top: 1px; }
+    .icon-new { background: #C6F6D5; color: #276749; }
+    .icon-fix { background: #FED7D7; color: #9B2C2C; }
+    .icon-improve { background: #BEE3F8; color: #2B6CB0; }
+    .change-detail { color: #718096; font-size: 13px; margin-top: 2px; }
+    .back-link { display: inline-block; margin-top: 32px; font-size: 13px; color: #4A5568; text-decoration: none; }
+    .back-link:hover { color: #2D3748; text-decoration: underline; }
+    .divider { height: 1px; background: #EDF2F7; margin: 4px 0 16px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <div class="header-title">AEM Exam Prep — AD0-E121</div>
+      <div class="header-sub">Release Notes</div>
+    </div>
+    <a href="/" style="font-size: 12px; color: rgba(255,255,255,0.7); text-decoration: none;">← Study Tracker</a>
+  </header>
+
+  <main>
+    <div class="page-title">Release Notes</div>
+    <div class="page-sub">A running log of improvements to the study tracker and quiz content.</div>
+
+    <!-- v1.2 -->
+    <div class="release">
+      <div class="release-header">
+        <div class="version-badge latest">v1.2</div>
+        <div>
+          <div class="release-title">Quiz Integration & Exercise Rewrites</div>
+          <div class="release-date">June 15, 2026</div>
+        </div>
+      </div>
+      <div class="release-body">
+
+        <div class="change-group">
+          <div class="group-label">New</div>
+          <ul class="change-list">
+            <li class="change-item">
+              <div class="change-icon icon-new">✦</div>
+              <div>
+                <div><strong>Four distinct quiz experiences</strong> — Architecture Quiz (10 Qs, scoped to Templates & Roles), Timed Practice Quiz (35 Qs + 70 min timer), Mock Exam (35 new questions, exam mode), Final Exam + Gap Review (35 scenario Qs, weak-domain analysis at results)</div>
+              </div>
+            </li>
+            <li class="change-item">
+              <div class="change-icon icon-new">✦</div>
+              <div>
+                <div><strong>Auto-complete schedule slots</strong> — finishing any quiz now automatically checks the corresponding step on the Study Schedule without any manual action</div>
+              </div>
+            </li>
+            <li class="change-item">
+              <div class="change-icon icon-new">✦</div>
+              <div>
+                <div><strong>Release Notes page</strong> — this page, linked from the Study Tracker dashboard</div>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="change-group">
+          <div class="group-label">Improved</div>
+          <ul class="change-list">
+            <li class="change-item">
+              <div class="change-icon icon-improve">↑</div>
+              <div>
+                <div><strong>Exercise a1 — Editable Template + Policy Creation</strong> rewritten with 11 detailed steps based on study notes: full walkthrough for creating the config folder from the Templates UI, correct policy icon description (hamburger + gear, not a wrench), and a final step demonstrating how policy changes propagate instantly</div>
+              </div>
+            </li>
+            <li class="change-item">
+              <div class="change-icon icon-improve">↑</div>
+              <div>
+                <div><strong>Exercise a2 — Roles, Groups & Permissions</strong> rewritten with 11 steps: explicit credentials for the test user, explanation of why built-in impersonation may fail on local SDK (use incognito instead), and a breakdown of the three key JCR privileges (jcr:read, jcr:modifyProperties, rep:write)</div>
+              </div>
+            </li>
+            <li class="change-item">
+              <div class="change-icon icon-improve">↑</div>
+              <div>
+                <div><strong>Exercise b1 — Content Fragment vs. Experience Fragment</strong> rewritten with 11 steps: prerequisite steps for creating the Content Fragment Model (Tools → General → Content Fragment Models), a clear warning that XFs must be published before the XF component can render them, troubleshooting guidance for missing variations, and the actual API URL pattern with a concrete example</div>
+              </div>
+            </li>
+            <li class="change-item">
+              <div class="change-icon icon-improve">↑</div>
+              <div>
+                <div><strong>Exercise e5 — Feature Recommendation Matrix</strong> expanded from a simple quiz to a 12-step learning exercise: each scenario now explains WHY that feature is the correct choice, with a bonus A/B testing scenario covering Launches + ContextHub/Target</div>
+              </div>
+            </li>
+            <li class="change-item">
+              <div class="change-icon icon-improve">↑</div>
+              <div>
+                <div><strong>Study Schedule</strong> converted from a date-grouped calendar view to a clean sequential step list — works regardless of when you're studying</div>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="change-group">
+          <div class="group-label">Fixed</div>
+          <ul class="change-list">
+            <li class="change-item">
+              <div class="change-icon icon-fix">✕</div>
+              <div>
+                <div><strong>Back to Study Tracker links</strong> — all four quiz pages now link correctly to <code>/</code>; previous versions used <code>javascript:history.back()</code> which fails when opening a quiz directly</div>
+              </div>
+            </li>
+            <li class="change-item">
+              <div class="change-icon icon-fix">✕</div>
+              <div>
+                <div><strong>aem-exam-prep.html</strong> was missing a Back link entirely on the results screen — added</div>
+              </div>
+            </li>
+            <li class="change-item">
+              <div class="change-icon icon-fix">✕</div>
+              <div>
+                <div><strong>Quiz question counts</strong> in the schedule description corrected — previously showed "12 questions" and "50 questions, 100 min" for slots that link to 35-question quizzes</div>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- v1.1 -->
+    <div class="release">
+      <div class="release-header">
+        <div class="version-badge">v1.1</div>
+        <div>
+          <div class="release-title">React Study Tracker</div>
+          <div class="release-date">June 11, 2026</div>
+        </div>
+      </div>
+      <div class="release-body">
+        <div class="change-group">
+          <div class="group-label">New</div>
+          <ul class="change-list">
+            <li class="change-item">
+              <div class="change-icon icon-new">✦</div>
+              <div>Full React-based study tracker replacing the initial static HTML — Dashboard, Study Schedule, Exercises, Domain Topics, Additional Topics, and Sandbox Setup tabs</div>
+            </li>
+            <li class="change-item">
+              <div class="change-icon icon-new">✦</div>
+              <div>Sandbox setup guide as a prerequisite tab — step-by-step local AEM SDK installation checklist with persistent completion state</div>
+            </li>
+            <li class="change-item">
+              <div class="change-icon icon-new">✦</div>
+              <div>Exercise navigation links on the Study Schedule — click any exercise chip to jump directly to that exercise in the Exercises tab</div>
+            </li>
+            <li class="change-item">
+              <div class="change-icon icon-new">✦</div>
+              <div>Deployed to Vercel with Vite build — fixed 404 errors from the initial static deployment</div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- v1.0 -->
+    <div class="release">
+      <div class="release-header">
+        <div class="version-badge">v1.0</div>
+        <div>
+          <div class="release-title">Initial Release</div>
+          <div class="release-date">June 10, 2026</div>
+        </div>
+      </div>
+      <div class="release-body">
+        <div class="change-group">
+          <ul class="change-list">
+            <li class="change-item">
+              <div class="change-icon icon-new">✦</div>
+              <div>Initial AEM AD0-E121 exam prep HTML — practice quiz with 35 questions across all exam domains</div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <a class="back-link" href="/">← Back to Study Tracker</a>
+  </main>
+</body>
+</html>

@@ -1011,6 +1011,7 @@ export default function AEMStudyTracker() {
                   { label: "AEM Sites Authoring Guide", url: "https://experienceleague.adobe.com/docs/experience-manager-65/authoring/home.html" },
                   { label: "Core Components Docs", url: "https://experienceleague.adobe.com/docs/experience-manager-core-components/using/introduction.html" },
                   { label: "Free Sample Questions (EDUSUM)", url: "https://www.edusum.com/adobe/adobe-experience-manager-sites-business-practitioner-expert-ad0-e121-certification-sample" },
+                  { label: "Release Notes", url: "/release-notes.html" },
                 ].map(link => (
                   <a key={link.label} href={link.url} target={link.highlight ? "_blank" : "_blank"} rel="noopener noreferrer" style={{ padding: "7px 14px", background: link.highlight ? "#E65100" : "white", border: `1px solid ${link.highlight ? "#E65100" : "#FFD54F"}`, borderRadius: 8, fontSize: 12, fontWeight: 600, color: link.highlight ? "white" : "#E65100", textDecoration: "none" }}>
                     {link.label} ↗
