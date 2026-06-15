@@ -405,6 +405,16 @@ function setProgress(pct) {
   document.getElementById('progressFill').style.width = pct + '%';
 }
 
+function markTrackerSlot(idx) {
+  try {
+    const raw = localStorage.getItem('aem_tracker');
+    const data = raw ? JSON.parse(raw) : { exercises: {}, slots: {}, notes: {} };
+    data.slots = data.slots || {};
+    data.slots[idx] = true;
+    localStorage.setItem('aem_tracker', JSON.stringify(data));
+  } catch(e) {}
+}
+
 const LETTERS = ['A', 'B', 'C', 'D', 'E'];
 
 // ─── Start ──────────────────────────────────────────────────────────────────
@@ -510,6 +520,7 @@ function advance() {
 
 // ─── Results ─────────────────────────────────────────────────────────────────
 function finishExam(timedOut) {
+  markTrackerSlot(10);
   stopTimer();
   setProgress(100);
   document.getElementById('timerDisplay').textContent = '';
