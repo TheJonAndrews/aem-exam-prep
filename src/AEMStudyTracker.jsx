@@ -618,19 +618,19 @@ const ADDITIONAL_TOPICS = [
 const CALENDAR_SLOTS = [
   { date: "Thu Jun 12", day: "Thursday", time: "8:00–9:30 AM", domain: "architecture", topic: "Templates & Policies", exerciseIds: ["a1"], color: "#1B6CA8" },
   { date: "Thu Jun 12", day: "Thursday", time: "9:30–11:00 AM", domain: "architecture", topic: "Roles & Permissions", exerciseIds: ["a2"], color: "#1B6CA8" },
-  { date: "Thu Jun 12", day: "Thursday", time: "11:00–11:30 AM", domain: "architecture", topic: "Quick review & practice quiz", exerciseIds: [], color: "#1B6CA8" },
+  { date: "Thu Jun 12", day: "Thursday", time: "11:00–11:30 AM", domain: "architecture", topic: "Quick review & practice quiz", exerciseIds: [], quizLink: "/aem-exam-prep.html", color: "#1B6CA8" },
   { date: "Mon Jun 15", day: "Monday", time: "11:30 AM–1:00 PM", domain: "business", topic: "AEM Module Mapping to Business Problems", exerciseIds: ["b1", "e5"], color: "#C94F2C" },
   { date: "Mon Jun 15", day: "Monday", time: "2:30–5:00 PM", domain: "business", topic: "Workflows & MSM (Focus Time)", exerciseIds: ["b2", "b4"], color: "#C94F2C" },
   { date: "Tue Jun 16", day: "Tuesday", time: "8:00–9:30 AM", domain: "education", topic: "AEM Features & Core Components", exerciseIds: ["e1", "e4"], color: "#2E7D32" },
   { date: "Tue Jun 16", day: "Tuesday", time: "9:30–11:00 AM", domain: "setup", topic: "Setup, Implementation & Error ID", exerciseIds: ["s1", "s2"], color: "#6A1B9A" },
-  { date: "Tue Jun 16", day: "Tuesday", time: "11:00 AM–12:00 PM", domain: "practice", topic: "Timed practice quiz (12 questions)", exerciseIds: [], color: "#455A64" },
+  { date: "Tue Jun 16", day: "Tuesday", time: "11:00 AM–12:00 PM", domain: "practice", topic: "Timed practice quiz (35 questions)", exerciseIds: [], quizLink: "/aem-exam-prep.html", color: "#455A64" },
   { date: "Wed Jun 17", day: "Wednesday", time: "9:00–10:30 AM", domain: "architecture", topic: "Third-Party Integrations & ContextHub", exerciseIds: ["a4", "a5"], color: "#1B6CA8" },
   { date: "Wed Jun 17", day: "Wednesday", time: "10:30 AM–12:00 PM", domain: "business", topic: "Scenario-Based Practice Questions", exerciseIds: ["b3", "b5"], color: "#C94F2C" },
-  { date: "Wed Jun 17", day: "Wednesday", time: "1:00–3:00 PM", domain: "practice", topic: "Full timed mock exam (50 questions, 100 min)", exerciseIds: [], color: "#455A64" },
+  { date: "Wed Jun 17", day: "Wednesday", time: "1:00–3:00 PM", domain: "practice", topic: "Full timed mock exam (35 questions)", exerciseIds: [], quizLink: "/aem-exam-prep.html", color: "#455A64" },
   { date: "Thu Jun 18", day: "Thursday", time: "9:00–10:30 AM", domain: "education", topic: "DAM, Metadata Schemas & Tags", exerciseIds: ["e2", "e3", "d1", "d2"], color: "#2E7D32" },
   { date: "Thu Jun 18", day: "Thursday", time: "10:30 AM–12:00 PM", domain: "setup", topic: "CRXDE, Packages & Replication", exerciseIds: ["s3", "s4", "s5"], color: "#6A1B9A" },
   { date: "Thu Jun 18", day: "Thursday", time: "1:00–2:30 PM", domain: "additional", topic: "Headless, SPA & AEMaaCS Cloud", exerciseIds: ["h1", "h2", "c1"], color: "#E65100" },
-  { date: "Fri Jun 19", day: "Friday", time: "9:00 AM–12:00 PM", domain: "practice", topic: "Final mock exam + gap review", exerciseIds: [], color: "#455A64" },
+  { date: "Fri Jun 19", day: "Friday", time: "9:00 AM–12:00 PM", domain: "practice", topic: "Final mock exam + gap review", exerciseIds: [], quizLink: "/aem-exam-prep.html", color: "#455A64" },
 ];
 
 const DOMAIN_MAP = {
@@ -986,13 +986,14 @@ export default function AEMStudyTracker() {
               <div style={{ fontWeight: 700, fontSize: 14, color: "#E65100", marginBottom: 8 }}>⚡ Quick Links — Official Resources</div>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                 {[
+                  { label: "Practice Quiz (35 questions)", url: "/aem-exam-prep.html", highlight: true },
                   { label: "Official Prep Course", url: "https://certification.adobe.com/courses/1177" },
                   { label: "Experience League Docs", url: "https://experienceleague.adobe.com/docs/experience-manager-cloud-service/content/overview/introduction.html" },
                   { label: "AEM Sites Authoring Guide", url: "https://experienceleague.adobe.com/docs/experience-manager-65/authoring/home.html" },
                   { label: "Core Components Docs", url: "https://experienceleague.adobe.com/docs/experience-manager-core-components/using/introduction.html" },
                   { label: "Free Sample Questions (EDUSUM)", url: "https://www.edusum.com/adobe/adobe-experience-manager-sites-business-practitioner-expert-ad0-e121-certification-sample" },
                 ].map(link => (
-                  <a key={link.label} href={link.url} target="_blank" rel="noopener noreferrer" style={{ padding: "7px 14px", background: "white", border: "1px solid #FFD54F", borderRadius: 8, fontSize: 12, fontWeight: 600, color: "#E65100", textDecoration: "none" }}>
+                  <a key={link.label} href={link.url} target={link.highlight ? "_blank" : "_blank"} rel="noopener noreferrer" style={{ padding: "7px 14px", background: link.highlight ? "#E65100" : "white", border: `1px solid ${link.highlight ? "#E65100" : "#FFD54F"}`, borderRadius: 8, fontSize: 12, fontWeight: 600, color: link.highlight ? "white" : "#E65100", textDecoration: "none" }}>
                     {link.label} ↗
                   </a>
                 ))}
@@ -1050,6 +1051,13 @@ export default function AEMStudyTracker() {
                                     </button>
                                   );
                                 })}
+                              </div>
+                            )}
+                            {slot.quizLink && (
+                              <div style={{ marginTop: 7 }}>
+                                <a href={slot.quizLink} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: "#C53030", background: "white", border: "1px solid #E2E8F0", borderRadius: 6, padding: "3px 9px", fontWeight: 600, textDecoration: "none", display: "inline-block" }}>
+                                  Practice Quiz →
+                                </a>
                               </div>
                             )}
                           </div>
