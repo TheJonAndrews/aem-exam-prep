@@ -945,7 +945,7 @@ export default function AEMStudyTracker() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16, marginBottom: 28 }}>
               {[
                 { label: "Exercises Complete", value: `${completedCount}/${totalExercises}`, sub: `${progress}% done`, color: "#E94560" },
-                { label: "Study Sessions Done", value: `${slotsCompleted}/${CALENDAR_SLOTS.length}`, sub: "calendar slots", color: "#1B6CA8" },
+                { label: "Study Sessions Done", value: `${slotsCompleted}/${CALENDAR_SLOTS.length}`, sub: "steps completed", color: "#1B6CA8" },
                 { label: "Passing Score Needed", value: "32/50", sub: "64% to pass", color: "#2E7D32" },
                 { label: "Time Per Session", value: "~90 min", sub: "avg study block", color: "#6A1B9A" },
               ].map(stat => (
@@ -1009,71 +1009,53 @@ export default function AEMStudyTracker() {
         {activeTab === "schedule" && (
           <div>
             <div style={{ background: "#EBF8FF", border: "1px solid #90CDF4", borderRadius: 12, padding: 16, marginBottom: 24 }}>
-              <div style={{ fontWeight: 700, fontSize: 14, color: "#2B6CB0" }}>📅 This Week's Study Plan — pulled from your Outlook calendar</div>
-              <div style={{ fontSize: 13, color: "#4A5568", marginTop: 4 }}>{slotsCompleted} of {CALENDAR_SLOTS.length} sessions completed · Wednesday June 17 and Thursday June 18 are your cleanest days — protect them.</div>
+              <div style={{ fontWeight: 700, fontSize: 14, color: "#2B6CB0" }}>Recommended Study Sequence</div>
+              <div style={{ fontSize: 13, color: "#4A5568", marginTop: 4 }}>{slotsCompleted} of {CALENDAR_SLOTS.length} sessions completed — work through these in order, at your own pace.</div>
             </div>
 
-            {["Thursday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"].filter((v, i, a) => a.indexOf(v) === i).map(day => {
-              const slots = CALENDAR_SLOTS.filter(s => s.day === day);
-              if (!slots.length) return null;
-              const dayDate = slots[0].date;
-              return (
-                <div key={day} style={{ marginBottom: 24 }}>
-                  <div style={{ fontSize: 15, fontWeight: 800, color: "#2D3748", marginBottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
-                    <span>{day}</span>
-                    <span style={{ fontSize: 12, fontWeight: 500, color: "#718096" }}>{dayDate}</span>
-                  </div>
-                  <div style={{ display: "grid", gap: 10 }}>
-                    {slots.map((slot, globalIdx) => {
-                      const idx = CALENDAR_SLOTS.indexOf(slot);
-                      const done = completedSlots[idx];
-                      const domain = DOMAIN_MAP[slot.domain];
-                      return (
-                        <div key={idx} style={{ background: "white", borderRadius: 12, padding: "16px 18px", boxShadow: "0 1px 3px rgba(0,0,0,0.08)", display: "flex", alignItems: "center", gap: 14, borderLeft: `4px solid ${done ? "#68D391" : slot.color}`, opacity: done ? 0.75 : 1 }}>
-                          <button onClick={() => toggleSlot(idx)} style={{ width: 28, height: 28, borderRadius: "50%", border: `2px solid ${done ? "#68D391" : "#CBD5E0"}`, background: done ? "#68D391" : "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 14, color: "white", fontWeight: 800 }}>
-                            {done ? "✓" : ""}
-                          </button>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontWeight: 700, fontSize: 14, color: "#2D3748", textDecoration: done ? "line-through" : "none" }}>{slot.topic}</div>
-                            <div style={{ fontSize: 12, color: "#718096", marginTop: 2 }}>
-                              <span style={{ color: slot.color, fontWeight: 600 }}>{domain?.label}</span>
-                              {" · "}
-                              <span>{slot.time}</span>
-                            </div>
-                            {slot.exerciseIds.length > 0 && (
-                              <div style={{ display: "flex", gap: 4, marginTop: 7, flexWrap: "wrap" }}>
-                                {slot.exerciseIds.map(id => {
-                                  const entry = exerciseLookup[id];
-                                  if (!entry) return null;
-                                  const exDone = completedExercises[id];
-                                  const exColor = entry.domain ? (DOMAIN_MAP[entry.domain]?.color || "#718096") : "#E65100";
-                                  const title = entry.exercise.title.length > 30 ? entry.exercise.title.slice(0, 27) + "…" : entry.exercise.title;
-                                  return (
-                                    <button key={id} onClick={() => navigateToExercise(id)} style={{ fontSize: 11, color: exDone ? "#276749" : exColor, background: exDone ? "#F0FFF4" : "white", border: `1px solid ${exDone ? "#9AE6B4" : "#E2E8F0"}`, borderRadius: 6, padding: "3px 9px", cursor: "pointer", fontWeight: 600, whiteSpace: "nowrap" }}>
-                                      {exDone ? "✓ " : ""}{title} →
-                                    </button>
-                                  );
-                                })}
-                              </div>
-                            )}
-                            {slot.quizLink && (
-                              <div style={{ marginTop: 7 }}>
-                                <a href={slot.quizLink} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: "#C53030", background: "white", border: "1px solid #E2E8F0", borderRadius: 6, padding: "3px 9px", fontWeight: 600, textDecoration: "none", display: "inline-block" }}>
-                                  Practice Quiz →
-                                </a>
-                              </div>
-                            )}
-                          </div>
-                          {slot.domain === "practice" && (
-                            <div style={{ fontSize: 11, background: "#E53E3E", color: "white", borderRadius: 6, padding: "3px 8px", fontWeight: 700 }}>EXAM SIM</div>
-                          )}
+            <div style={{ display: "grid", gap: 10 }}>
+              {CALENDAR_SLOTS.map((slot, idx) => {
+                const done = completedSlots[idx];
+                const domain = DOMAIN_MAP[slot.domain];
+                return (
+                  <div key={idx} style={{ background: "white", borderRadius: 12, padding: "16px 18px", boxShadow: "0 1px 3px rgba(0,0,0,0.08)", display: "flex", alignItems: "center", gap: 14, borderLeft: `4px solid ${done ? "#68D391" : slot.color}`, opacity: done ? 0.75 : 1 }}>
+                    <button onClick={() => toggleSlot(idx)} style={{ width: 28, height: 28, borderRadius: "50%", border: `2px solid ${done ? "#68D391" : "#CBD5E0"}`, background: done ? "#68D391" : "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 14, color: "white", fontWeight: 800 }}>
+                      {done ? "✓" : ""}
+                    </button>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 700, fontSize: 14, color: "#2D3748", textDecoration: done ? "line-through" : "none" }}>{slot.topic}</div>
+                      <div style={{ fontSize: 12, color: slot.color, fontWeight: 600, marginTop: 2 }}>{domain?.label}</div>
+                      {slot.exerciseIds.length > 0 && (
+                        <div style={{ display: "flex", gap: 4, marginTop: 7, flexWrap: "wrap" }}>
+                          {slot.exerciseIds.map(id => {
+                            const entry = exerciseLookup[id];
+                            if (!entry) return null;
+                            const exDone = completedExercises[id];
+                            const exColor = entry.domain ? (DOMAIN_MAP[entry.domain]?.color || "#718096") : "#E65100";
+                            const title = entry.exercise.title.length > 30 ? entry.exercise.title.slice(0, 27) + "…" : entry.exercise.title;
+                            return (
+                              <button key={id} onClick={() => navigateToExercise(id)} style={{ fontSize: 11, color: exDone ? "#276749" : exColor, background: exDone ? "#F0FFF4" : "white", border: `1px solid ${exDone ? "#9AE6B4" : "#E2E8F0"}`, borderRadius: 6, padding: "3px 9px", cursor: "pointer", fontWeight: 600, whiteSpace: "nowrap" }}>
+                                {exDone ? "✓ " : ""}{title} →
+                              </button>
+                            );
+                          })}
                         </div>
-                      );
-                    })}
+                      )}
+                      {slot.quizLink && (
+                        <div style={{ marginTop: 7 }}>
+                          <a href={slot.quizLink} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: "#C53030", background: "white", border: "1px solid #E2E8F0", borderRadius: 6, padding: "3px 9px", fontWeight: 600, textDecoration: "none", display: "inline-block" }}>
+                            Practice Quiz →
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                    {slot.domain === "practice" && (
+                      <div style={{ fontSize: 11, background: "#E53E3E", color: "white", borderRadius: 6, padding: "3px 8px", fontWeight: 700 }}>EXAM SIM</div>
+                    )}
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         )}
 
