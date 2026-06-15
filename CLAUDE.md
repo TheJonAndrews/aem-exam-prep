@@ -91,6 +91,19 @@ Slot index mappings (index into `CALENDAR_SLOTS`):
 
 `markTrackerSlot` is called at the top of `renderResults()` or `finishExam()` in each file.
 
+## Release Notes Convention
+
+**Every user-facing commit must also update the release notes.** This is a standing user requirement, not optional.
+
+Two files to update together with the feature work — include them in the same commit:
+
+1. **`public/release-notes.html`** — add an entry under the current version block (or create a new version block if the version bumps). Use the existing New / Improved / Fixed category structure with colored dot icons.
+2. **`src/AEMStudyTracker.jsx`** — bump the version string in the `"What's New · vX.X"` link inside the header (top-right of the dark banner, just below the progress percentage).
+
+Skip the release notes update only for internal-only changes that have no visible effect on the app (e.g. CLAUDE.md edits, tooling changes).
+
+The release notes page is at `/release-notes.html` (`public/release-notes.html`) and is linked from both the dashboard Quick Links and the app header.
+
 ## Schedule → Quiz Link Wiring
 
 `CALENDAR_SLOTS` in `AEMStudyTracker.jsx` uses an optional `quizLink` field. When present, the schedule tab renders a "Practice Quiz →" anchor for that slot.
