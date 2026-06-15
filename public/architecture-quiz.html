@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AEM Architecture Review — Templates & Permissions</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f4f4f4; color: #2c2c2c; min-height: 100vh; }
+    header { background: #1B6CA8; color: white; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+    header .title-block .eyebrow { font-size: 10px; opacity: 0.75; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 3px; }
+    header h1 { font-size: 17px; font-weight: 600; }
+    #headerRight { font-size: 13px; opacity: 0.9; text-align: right; }
+    .progress-track { background: rgba(0,0,0,0.15); height: 3px; position: sticky; top: 51px; z-index: 99; }
+    .progress-fill { background: #ffcb00; height: 3px; transition: width 0.35s ease; }
+    .container { max-width: 740px; margin: 36px auto; padding: 0 20px 60px; }
+    .start-card { background: white; border-radius: 10px; padding: 44px 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.07); }
+    .start-card h2 { font-size: 22px; margin-bottom: 10px; }
+    .start-card .description { color: #555; font-size: 15px; line-height: 1.6; margin-bottom: 28px; }
+    .domain-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 32px; }
+    .pill { background: #EBF4FB; color: #1B6CA8; font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 20px; }
+    .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 32px; }
+    .stat-box { background: #fafafa; border: 1px solid #e8e8e8; border-radius: 8px; padding: 16px; text-align: center; }
+    .stat-box .num { font-size: 30px; font-weight: 700; color: #1B6CA8; }
+    .stat-box .lbl { font-size: 12px; color: #888; margin-top: 2px; }
+    .question-card { background: white; border-radius: 10px; padding: 32px; box-shadow: 0 2px 10px rgba(0,0,0,0.07); }
+    .q-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
+    .q-counter { font-size: 13px; color: #888; }
+    .domain-tag { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; background: #EBF4FB; color: #1B6CA8; padding: 4px 9px; border-radius: 4px; }
+    .q-text { font-size: 17px; font-weight: 500; line-height: 1.55; margin-bottom: 6px; }
+    .q-hint { font-size: 13px; color: #999; margin-bottom: 22px; }
+    .options { display: flex; flex-direction: column; gap: 9px; margin-bottom: 24px; }
+    .option { display: flex; align-items: flex-start; gap: 12px; padding: 13px 15px; border: 2px solid #e5e5e5; border-radius: 7px; cursor: pointer; transition: border-color 0.12s, background 0.12s; user-select: none; }
+    .option:hover:not(.locked) { border-color: #1B6CA8; background: #f0f6fc; }
+    .option.selected { border-color: #1B6CA8; background: #EBF4FB; }
+    .option.result-correct { border-color: #2d9e47; background: #f0faf3; }
+    .option.result-wrong { border-color: #d93025; background: #fdf2f2; }
+    .option.result-missed { border-color: #2d9e47; background: #f5fdf7; opacity: 0.75; }
+    .option.locked { cursor: default; }
+    .opt-indicator { width: 18px; height: 18px; border: 2px solid #ccc; border-radius: 50%; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; }
+    .opt-indicator.square { border-radius: 4px; }
+    .option.selected .opt-indicator { border-color: #1B6CA8; background: #1B6CA8; }
+    .option.result-correct .opt-indicator { border-color: #2d9e47; background: #2d9e47; }
+    .option.result-wrong .opt-indicator { border-color: #d93025; background: #d93025; }
+    .option.result-missed .opt-indicator { border-color: #2d9e47; }
+    .opt-check { color: white; font-size: 10px; font-weight: 700; display: none; }
+    .option.selected .opt-check, .option.result-correct .opt-check, .option.result-wrong .opt-check { display: block; }
+    .opt-label { font-size: 15px; line-height: 1.45; }
+    .opt-letter { font-weight: 600; color: #aaa; margin-right: 5px; }
+    .feedback-box { border-radius: 7px; padding: 16px 18px; font-size: 14px; line-height: 1.6; margin-bottom: 24px; display: none; }
+    .feedback-box.correct { background: #f0faf3; border-left: 4px solid #2d9e47; }
+    .feedback-box.incorrect { background: #fdf2f2; border-left: 4px solid #d93025; }
+    .feedback-verdict { font-weight: 700; margin-bottom: 5px; font-size: 14px; }
+    .feedback-box.correct .feedback-verdict { color: #1e6e33; }
+    .feedback-box.incorrect .feedback-verdict { color: #8b1a1a; }
+    .feedback-box .feedback-text { color: #333; }
+    .actions { display: flex; justify-content: space-between; align-items: center; }
+    .running-score { font-size: 13px; color: #aaa; }
+    .btn { padding: 11px 26px; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.12s, opacity 0.12s; }
+    .btn-primary { background: #1B6CA8; color: white; }
+    .btn-primary:hover:not(:disabled) { background: #155a8a; }
+    .btn-primary:disabled { opacity: 0.35; cursor: not-allowed; }
+    .btn-ghost { background: #2c2c2c; color: white; margin-left: 10px; }
+    .btn-ghost:hover { background: #444; }
+    .results-card { background: white; border-radius: 10px; padding: 44px 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.07); text-align: center; }
+    .results-card .eyebrow { font-size: 11px; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+    .big-score { font-size: 80px; font-weight: 700; color: #1B6CA8; line-height: 1; margin-bottom: 6px; }
+    .score-sub { font-size: 16px; color: #888; margin-bottom: 12px; }
+    .verdict-msg { font-size: 15px; font-weight: 500; margin-bottom: 36px; }
+    .breakdown-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 12px; margin-bottom: 36px; text-align: left; }
+    .bd-item { background: #f8f8f8; border-radius: 7px; padding: 14px 16px; }
+    .bd-domain { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #999; margin-bottom: 5px; }
+    .bd-score { font-size: 20px; font-weight: 700; }
+    .bd-score .bd-of { font-size: 13px; font-weight: 400; color: #aaa; }
+    .back-link { display: inline-block; margin-top: 16px; font-size: 13px; color: #1B6CA8; text-decoration: none; }
+    .back-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="title-block">
+    <div class="eyebrow">Architecture Domain Review</div>
+    <h1>Templates &amp; Permissions — Quick Quiz</h1>
+  </div>
+  <div id="headerRight"></div>
+</header>
+
+<div class="progress-track">
+  <div class="progress-fill" id="progressFill" style="width:0%"></div>
+</div>
+
+<div class="container">
+  <div id="app"></div>
+</div>
+
+<script>
+const ALL_QUESTIONS = [
+  // TEMPLATES & POLICIES (5)
+  {
+    id: 1, type: 'mc', domain: 'Templates & Policies',
+    question: 'Where in the JCR are Editable Templates stored?',
+    options: [
+      '/etc/designs/[project]/templates',
+      '/conf/[project]/settings/wcm/templates',
+      '/apps/[project]/templates',
+      '/content/[project]/.templates'
+    ],
+    correct: [1],
+    explanation: 'Editable Templates live under /conf — either project-specific (/conf/[project]/settings/wcm/templates) or global (/conf/global/settings/wcm/templates). The /etc path was used by legacy Static Templates. /apps holds code; /content holds authored content. Knowing this path is an exam staple.'
+  },
+  {
+    id: 2, type: 'tf', domain: 'Templates & Policies',
+    question: 'A policy applied to a Layout Container can be shared across multiple Editable Templates. Changing that policy updates the allowed component list for every template that references it simultaneously.',
+    options: ['True', 'False'],
+    correct: [0],
+    explanation: 'True. Policies are stored as independent nodes that templates reference by name — they are not embedded inside the template. If two templates point to the same policy, a change to that policy immediately affects both. This is the governance power of the policy model: one update propagates everywhere the policy is referenced.'
+  },
+  {
+    id: 3, type: 'mc', domain: 'Templates & Policies',
+    question: 'A template author switches an Editable Template to Structure mode. Which action is only available in this mode?',
+    options: [
+      'Add placeholder text that pre-populates new pages using this template',
+      'Lock a component in place so page authors cannot move or delete it',
+      'Enable the template so it appears in the "Create Page" dialog',
+      'Assign a Language Copy configuration to the template'
+    ],
+    correct: [1],
+    explanation: 'Structure mode is where template authors define the fixed skeleton of a page — components can be added and locked so page authors cannot move or remove them. Initial Content mode is for editable placeholder content. Enabling the template is a separate action in the template console; Language Copy is an MSM concept unrelated to template modes.'
+  },
+  {
+    id: 4, type: 'multi', domain: 'Templates & Policies', selectCount: 2,
+    question: 'Which two items are configured via a Template Policy in the Template Editor?',
+    options: [
+      'Allowed components for a Layout Container',
+      'Which authors are permitted to edit pages built on this template',
+      'Style System options available for a specific component',
+      'The vanity URL pattern for pages created from this template'
+    ],
+    correct: [0, 2],
+    explanation: 'Template Policies control component allow-listing (which components appear in the authoring component browser) and Style System options (which CSS style classes authors can apply per component). Author access is controlled via ACLs on the /conf template path; vanity URLs are set per page in Page Properties > Advanced.'
+  },
+  {
+    id: 5, type: 'mc', domain: 'Templates & Policies',
+    question: 'A content author reports that a Text component on their page cannot be clicked or edited — it appears grayed out. The component renders correctly on the live site. What is the most likely explanation?',
+    options: [
+      'The Text component has a rendering bug in its HTL script',
+      'The component was added in Structure mode and locked by a template author',
+      'The author\'s account is missing jcr:modifyProperties on the page node',
+      'The Dispatcher has cached the page without WCM mode headers'
+    ],
+    correct: [1],
+    explanation: 'In Editable Templates, components placed in Structure mode can be locked — they are visible on the page but not editable by content authors. This is intentional for fixed structural elements like global headers or footers. A locked component looks grayed out in the authoring UI. The other options are less likely for a single non-editable component on an otherwise functional page.'
+  },
+
+  // ROLES & PERMISSIONS (5)
+  {
+    id: 6, type: 'mc', domain: 'Roles & Permissions',
+    question: 'In AEM\'s JCR access control model, if a user\'s group has both an Allow: jcr:read and a Deny: jcr:read ACE on the same node, which takes precedence?',
+    options: [
+      'Allow — explicit grants override group-level denials',
+      'Deny',
+      'The most recently modified ACE wins',
+      'It depends on whether the node is under /content or /conf'
+    ],
+    correct: [1],
+    explanation: 'In AEM\'s ACL model, Deny always overrides Allow at the same hierarchy level. This is a fundamental security principle: you cannot "un-deny" a permission by adding an allow at the same node. When designing permissions, set broad allows on parent nodes, then apply specific denials on restricted child paths — never assume an allow will win against a deny.'
+  },
+  {
+    id: 7, type: 'mc', domain: 'Roles & Permissions',
+    question: 'A new employee needs to create and edit AEM Sites pages but should NOT be able to upload new assets to the DAM. Which built-in group assignment is most appropriate?',
+    options: [
+      '"administrators" — full system access',
+      '"content-authors" without adding "dam-editors" or "dam-administrators"',
+      '"dam-users" — focused on DAM browsing and download',
+      '"workflow-users" — provides access to the AEM Inbox only'
+    ],
+    correct: [1],
+    explanation: '"content-authors" is the baseline group for Sites page authors — it grants access to /content for page editing and basic DAM browsing to reference assets. "dam-editors" and "dam-administrators" add DAM upload and management rights. Keeping the user out of those groups limits DAM write access. "administrators" is always too broad for content authors.'
+  },
+  {
+    id: 8, type: 'multi', domain: 'Roles & Permissions', selectCount: 2,
+    question: 'Which two JCR permissions would you grant to allow a group to read and update existing page properties, but NOT create or delete pages?',
+    options: [
+      'jcr:read',
+      'jcr:addChildNodes',
+      'jcr:modifyProperties',
+      'rep:write'
+    ],
+    correct: [0, 2],
+    explanation: 'jcr:read grants read access; jcr:modifyProperties allows updating existing node properties (page title, metadata, tags) without creating new nodes. rep:write is a convenience aggregate that includes addChildNodes, removeChildNodes, and modifyProperties — it would allow creating and deleting pages, which you want to prevent. jcr:addChildNodes specifically allows creating new child nodes (new pages).'
+  },
+  {
+    id: 9, type: 'mc', domain: 'Roles & Permissions',
+    question: 'What is the purpose of a Closed User Group (CUG) in AEM?',
+    options: [
+      'To restrict which template authors can modify a specific Editable Template',
+      'To limit which authenticated users or groups can VIEW content in a published section of the site',
+      'To prevent certain workflow participants from rejecting tasks in the AEM Inbox',
+      'To block the Dispatcher from caching specific URL patterns'
+    ],
+    correct: [1],
+    explanation: 'A CUG is an access control mechanism for the Publish tier. It restricts anonymous access and limits page viewing to only the authenticated users or groups named in the CUG configuration. This is used for partner portals, member-only content, and intranet pages. CUGs operate at publish time — they have no effect on the Author instance.'
+  },
+  {
+    id: 10, type: 'mc', domain: 'Roles & Permissions',
+    question: 'A government agency wants pages under /content/portal/agency-staff to be visible only to authenticated members of the "agency-staff" group when accessed on the public-facing site. Which AEM capability achieves this with no custom code?',
+    options: [
+      'A replication agent filter that blocks those pages from reaching the Publish instance',
+      'A Closed User Group (CUG) configured on the content path with "agency-staff" as the allowed group',
+      'An OSGi service that intercepts HTTP requests and validates group membership server-side',
+      'A Dispatcher deny rule blocking all requests to those URLs'
+    ],
+    correct: [1],
+    explanation: 'CUG is the correct built-in AEM feature for this scenario. Configured on the JCR content path, it enforces authentication and restricts viewing to the named group — no custom code required. The Dispatcher and replication rules control caching and delivery mechanics, not viewer authorization. An OSGi interceptor would require custom development where CUG provides the same result out of the box.'
+  }
+];
+
+let questions = [];
+let idx = 0;
+let selected = [];
+let answered = false;
+let score = 0;
+let domainMap = {};
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function initDomains() {
+  domainMap = {};
+  questions.forEach(q => {
+    if (!domainMap[q.domain]) domainMap[q.domain] = { correct: 0, total: 0 };
+    domainMap[q.domain].total++;
+  });
+}
+
+function setProgress(pct) {
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+const LETTERS = ['A', 'B', 'C', 'D'];
+
+function renderStart() {
+  setProgress(0);
+  document.getElementById('headerRight').textContent = '';
+  document.getElementById('app').innerHTML = `
+    <div class="start-card">
+      <h2>Architecture Review: Thu Jun 12</h2>
+      <p class="description">
+        10 questions covering this morning's exercises — Editable Templates &amp; Policies (a1) and
+        Roles, Groups &amp; Permissions (a2). Each question shows the correct answer and explanation
+        after you submit.
+      </p>
+      <div class="stat-row">
+        <div class="stat-box"><div class="num">10</div><div class="lbl">Questions</div></div>
+        <div class="stat-box"><div class="num">~15</div><div class="lbl">Minutes</div></div>
+        <div class="stat-box"><div class="num">2</div><div class="lbl">Topic areas</div></div>
+      </div>
+      <div class="domain-pills">
+        <span class="pill">Templates &amp; Policies</span>
+        <span class="pill">Roles &amp; Permissions</span>
+      </div>
+      <button class="btn btn-primary" onclick="startQuiz()">Start Review Quiz</button>
+    </div>
+  `;
+}
+
+function startQuiz() {
+  questions = shuffle(ALL_QUESTIONS);
+  idx = 0;
+  score = 0;
+  initDomains();
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = questions[idx];
+  const pct = (idx / questions.length) * 100;
+  setProgress(pct);
+  document.getElementById('headerRight').textContent = `${idx + 1} / ${questions.length}`;
+
+  let hint = q.type === 'tf' ? 'True or False' : q.type === 'multi' ? `Select ${q.selectCount} answers` : 'Select one answer';
+  const optType = q.type === 'multi' ? 'square' : '';
+  const optionsHTML = q.options.map((opt, i) => `
+    <div class="option" id="opt-${i}" onclick="toggleOption(${i})">
+      <div class="opt-indicator ${optType}"><span class="opt-check">✓</span></div>
+      <span class="opt-label"><span class="opt-letter">${LETTERS[i]}.</span>${opt}</span>
+    </div>
+  `).join('');
+
+  document.getElementById('app').innerHTML = `
+    <div class="question-card">
+      <div class="q-meta">
+        <span class="q-counter">Question ${idx + 1} of ${questions.length}</span>
+        <span class="domain-tag">${q.domain}</span>
+      </div>
+      <div class="q-text">${q.question}</div>
+      <div class="q-hint">${hint}</div>
+      <div class="options">${optionsHTML}</div>
+      <div class="feedback-box" id="feedback"></div>
+      <div class="actions">
+        <div class="running-score" id="runningScore">Score: ${score} / ${idx}</div>
+        <div>
+          <button class="btn btn-primary" id="submitBtn" onclick="submitAnswer()" disabled>Check Answer</button>
+          <button class="btn btn-ghost" id="nextBtn" onclick="advance()" style="display:none">
+            ${idx < questions.length - 1 ? 'Next Question →' : 'See Results'}
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  selected = [];
+  answered = false;
+}
+
+function toggleOption(i) {
+  if (answered) return;
+  const q = questions[idx];
+  const el = document.getElementById(`opt-${i}`);
+  if (q.type === 'multi') {
+    if (selected.includes(i)) { selected = selected.filter(x => x !== i); el.classList.remove('selected'); }
+    else { selected.push(i); el.classList.add('selected'); }
+    document.getElementById('submitBtn').disabled = selected.length !== q.selectCount;
+  } else {
+    selected = [i];
+    document.querySelectorAll('.option').forEach((el2, j) => el2.classList.toggle('selected', j === i));
+    document.getElementById('submitBtn').disabled = false;
+  }
+}
+
+function submitAnswer() {
+  if (answered) return;
+  answered = true;
+  const q = questions[idx];
+  const sortSel = [...selected].sort((a,b)=>a-b);
+  const sortCor = [...q.correct].sort((a,b)=>a-b);
+  const correct = sortSel.length === sortCor.length && sortSel.every((v,i) => v === sortCor[i]);
+
+  if (correct) { score++; domainMap[q.domain].correct++; }
+
+  document.querySelectorAll('.option').forEach((el, i) => {
+    el.classList.add('locked');
+    el.classList.remove('selected');
+    if (selected.includes(i) && q.correct.includes(i))  el.classList.add('result-correct');
+    if (selected.includes(i) && !q.correct.includes(i)) el.classList.add('result-wrong');
+    if (!selected.includes(i) && q.correct.includes(i)) el.classList.add('result-missed');
+  });
+
+  const fb = document.getElementById('feedback');
+  fb.style.display = 'block';
+  fb.className = `feedback-box ${correct ? 'correct' : 'incorrect'}`;
+  fb.innerHTML = `<div class="feedback-verdict">${correct ? '✓ Correct' : '✗ Incorrect'}</div><div class="feedback-text">${q.explanation}</div>`;
+
+  document.getElementById('submitBtn').style.display = 'none';
+  document.getElementById('nextBtn').style.display = 'inline-block';
+  document.getElementById('runningScore').textContent = `Score: ${score} / ${idx + 1}`;
+}
+
+function advance() {
+  idx++;
+  if (idx >= questions.length) renderResults();
+  else renderQuestion();
+}
+
+function renderResults() {
+  setProgress(100);
+  document.getElementById('headerRight').textContent = 'Complete';
+  const pct = Math.round((score / questions.length) * 100);
+  let msg, msgColor;
+  if (pct >= 80)      { msg = 'Solid grasp of templates and permissions — you\'re ready to move on.'; msgColor = '#2d9e47'; }
+  else if (pct >= 60) { msg = 'Good foundation. Re-read the explanations for missed questions before the exam.'; msgColor = '#e07b00'; }
+  else                { msg = 'Review the a1 and a2 exercises again — focus on the Key Insights.'; msgColor = '#d93025'; }
+
+  const bdHTML = Object.entries(domainMap).map(([domain, data]) => {
+    const p = Math.round((data.correct / data.total) * 100);
+    const color = p >= 80 ? '#2d9e47' : p >= 60 ? '#e07b00' : '#d93025';
+    return `<div class="bd-item"><div class="bd-domain">${domain}</div><div class="bd-score" style="color:${color}">${data.correct}/${data.total} <span class="bd-of">${p}%</span></div></div>`;
+  }).join('');
+
+  document.getElementById('app').innerHTML = `
+    <div class="results-card">
+      <div class="eyebrow">Review Quiz Complete</div>
+      <div class="big-score">${pct}%</div>
+      <div class="score-sub">${score} of ${questions.length} correct</div>
+      <div class="verdict-msg" style="color:${msgColor}">${msg}</div>
+      <div class="breakdown-grid">${bdHTML}</div>
+      <button class="btn btn-primary" onclick="restartQuiz()">Retake with Shuffled Questions</button>
+      <br><a class="back-link" href="javascript:history.back()">← Back to Study Tracker</a>
+    </div>
+  `;
+}
+
+function restartQuiz() {
+  questions = shuffle(ALL_QUESTIONS);
+  idx = 0; score = 0;
+  initDomains();
+  renderQuestion();
+}
+
+renderStart();
+</script>
+</body>
+</html>

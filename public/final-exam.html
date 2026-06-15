@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AEM Final Mock Exam + Gap Review</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f4f4f4; color: #2c2c2c; min-height: 100vh; }
+    header { background: #263238; color: white; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+    header .title-block .eyebrow { font-size: 10px; opacity: 0.75; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 3px; }
+    header h1 { font-size: 17px; font-weight: 600; }
+    #timerDisplay { font-size: 15px; font-weight: 700; letter-spacing: 0.5px; }
+    #timerDisplay.warning { color: #ffcb00; }
+    #timerDisplay.danger  { color: #ff6b6b; animation: pulse 1s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;}50%{opacity:0.5;} }
+    .progress-track { background: rgba(0,0,0,0.15); height: 3px; position: sticky; top: 51px; z-index: 99; }
+    .progress-fill { background: #ffcb00; height: 3px; transition: width 0.35s ease; }
+    .container { max-width: 740px; margin: 36px auto; padding: 0 20px 60px; }
+    .start-card { background: white; border-radius: 10px; padding: 44px 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.07); }
+    .start-card h2 { font-size: 22px; margin-bottom: 10px; }
+    .start-card .description { color: #555; font-size: 15px; line-height: 1.6; margin-bottom: 20px; }
+    .exam-rules { background: #ECEFF1; border-left: 4px solid #263238; border-radius: 4px; padding: 14px 18px; margin-bottom: 28px; font-size: 14px; color: #444; line-height: 1.7; }
+    .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 32px; }
+    .stat-box { background: #fafafa; border: 1px solid #e8e8e8; border-radius: 8px; padding: 16px; text-align: center; }
+    .stat-box .num { font-size: 30px; font-weight: 700; color: #263238; }
+    .stat-box .lbl { font-size: 12px; color: #888; margin-top: 2px; }
+    .question-card { background: white; border-radius: 10px; padding: 32px; box-shadow: 0 2px 10px rgba(0,0,0,0.07); }
+    .q-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
+    .q-counter { font-size: 13px; color: #888; }
+    .domain-tag { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; background: #ECEFF1; color: #263238; padding: 4px 9px; border-radius: 4px; }
+    .q-text { font-size: 17px; font-weight: 500; line-height: 1.55; margin-bottom: 6px; }
+    .q-hint { font-size: 13px; color: #999; margin-bottom: 22px; }
+    .options { display: flex; flex-direction: column; gap: 9px; margin-bottom: 24px; }
+    .option { display: flex; align-items: flex-start; gap: 12px; padding: 13px 15px; border: 2px solid #e5e5e5; border-radius: 7px; cursor: pointer; transition: border-color 0.12s, background 0.12s; user-select: none; }
+    .option:hover:not(.locked) { border-color: #263238; background: #f5f5f5; }
+    .option.selected { border-color: #263238; background: #ECEFF1; }
+    .option.locked { cursor: default; }
+    .opt-indicator { width: 18px; height: 18px; border: 2px solid #ccc; border-radius: 50%; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; }
+    .opt-indicator.square { border-radius: 4px; }
+    .option.selected .opt-indicator { border-color: #263238; background: #263238; }
+    .opt-check { color: white; font-size: 10px; font-weight: 700; display: none; }
+    .option.selected .opt-check { display: block; }
+    .opt-label { font-size: 15px; line-height: 1.45; }
+    .opt-letter { font-weight: 600; color: #aaa; margin-right: 5px; }
+    .actions { display: flex; justify-content: space-between; align-items: center; }
+    .q-num-display { font-size: 13px; color: #aaa; }
+    .btn { padding: 11px 26px; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.12s; }
+    .btn-primary { background: #263238; color: white; }
+    .btn-primary:hover:not(:disabled) { background: #37474F; }
+    .btn-primary:disabled { opacity: 0.35; cursor: not-allowed; }
+    /* RESULTS */
+    .results-card { background: white; border-radius: 10px; padding: 44px 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.07); }
+    .results-card .eyebrow { font-size: 11px; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; text-align: center; }
+    .big-score { font-size: 80px; font-weight: 700; color: #263238; line-height: 1; margin-bottom: 6px; text-align: center; }
+    .score-sub { font-size: 16px; color: #888; margin-bottom: 12px; text-align: center; }
+    .verdict-msg { font-size: 15px; font-weight: 500; margin-bottom: 32px; text-align: center; }
+    .section-head { font-size: 13px; font-weight: 700; color: #999; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; margin-top: 28px; }
+    .breakdown-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 12px; margin-bottom: 16px; }
+    .bd-item { background: #f8f8f8; border-radius: 7px; padding: 14px 16px; }
+    .bd-domain { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #999; margin-bottom: 5px; }
+    .bd-score { font-size: 20px; font-weight: 700; }
+    .bd-of { font-size: 13px; font-weight: 400; color: #aaa; }
+    /* GAP REVIEW */
+    .gap-card { border: 1px solid #e5e5e5; border-left: 4px solid #d93025; border-radius: 8px; padding: 16px 18px; margin-bottom: 12px; }
+    .gap-domain { font-size: 13px; font-weight: 700; color: #263238; margin-bottom: 6px; }
+    .gap-score { font-size: 12px; color: #d93025; margin-bottom: 10px; }
+    .gap-exercises { list-style: none; }
+    .gap-exercises li { font-size: 13px; color: #444; padding: 4px 0; line-height: 1.5; }
+    .gap-exercises li::before { content: "→ "; color: #d93025; font-weight: 700; }
+    /* WRONG REVIEW */
+    .review-item { border: 1px solid #e5e5e5; border-radius: 8px; padding: 16px 18px; margin-bottom: 12px; }
+    .review-item.wrong { border-left: 4px solid #d93025; }
+    .review-q { font-size: 14px; font-weight: 600; color: #2c2c2c; margin-bottom: 8px; }
+    .review-row { font-size: 13px; margin-bottom: 4px; }
+    .review-row .lbl { color: #999; font-weight: 600; margin-right: 6px; }
+    .review-exp { font-size: 13px; color: #555; line-height: 1.6; margin-top: 8px; padding-top: 8px; border-top: 1px solid #f0f0f0; }
+    .results-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 28px; }
+    .back-link { display: block; margin-top: 12px; font-size: 13px; color: #455A64; text-decoration: none; text-align: center; }
+    .back-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="title-block">
+    <div class="eyebrow">Final Mock Exam + Gap Review</div>
+    <h1>AEM Business Practitioner Expert</h1>
+  </div>
+  <div><span id="timerDisplay">⏱ 70:00</span></div>
+</header>
+
+<div class="progress-track">
+  <div class="progress-fill" id="progressFill" style="width:0%"></div>
+</div>
+
+<div class="container">
+  <div id="app"></div>
+</div>
+
+<script>
+const TIMER_SECONDS = 70 * 60;
+let timerInterval = null;
+let secondsLeft = TIMER_SECONDS;
+let questions = [];
+let idx = 0;
+let selected = [];
+let answered = false;
+let score = 0;
+let domainMap = {};
+let answers = [];
+
+// Gap review: maps domain name → exercises to revisit in the study tracker
+const GAP_EXERCISES = {
+  'Architecture':          ['a1 — Editable Template + Policy Creation', 'a2 — Roles, Groups & Permissions Deep Dive', 'a3 — Dispatcher Flush Agents & Caching'],
+  'Multi-Site Management': ['b4 — MSM Live Copy + Rollout', 'b2 — Workflow-Gated Publishing'],
+  'Authoring':             ['b1 — AEM Module Mapping scenario exercise', 'e1 — AEM Features & Core Components walkthrough'],
+  'AEMaaCS':               ['c1 — Cloud Manager Pipeline Review', 'h1 — Headless Architecture setup'],
+  'Headless':              ['h1 — Headless Architecture & Content Fragments', 'h2 — GraphQL API exploration'],
+  'Assets':                ['e2 — Metadata Schema & Processing Profiles', 'd1 — Processing Profiles & Renditions', 'd2 — Asset Reports'],
+  'Workflows':             ['b2 — Workflow-Gated Publishing', 'e5 — Workflow Model & Participant Steps'],
+  'Setup & Implementation':['s1 — CRXDE Lite & Package Manager', 's2 — Error ID & OSGi Troubleshooting'],
+  'Configuration':         ['s4 — OSGi Configs & Runmodes', 'a4 — Cloud Services & Third-Party Integrations'],
+  'Forms':                 ['Review AEM Forms module in the Additional Topics tab'],
+  'Governance':            ['b3 — Governance & Compliance scenario', 'b5 — Scenario-Based Practice (governance questions)'],
+  'Components':            ['e1 — AEM Features & Core Components', 'e4 — Component Policies deep dive'],
+};
+
+const ALL_QUESTIONS = [
+  {
+    id: 1, type: 'mc', domain: 'Architecture',
+    question: 'A customer reports the live site shows stale content 2 hours after an author published new pages. The Publish instance has the updated content. What is the most likely cause?',
+    options: ['The Author instance failed to save before publishing', 'The Dispatcher cache was not invalidated after the publish event', 'The Publish instance is running an older AEM Service Pack', 'The author used Quick Publish instead of Manage Publication'],
+    correct: [1],
+    explanation: 'Stale content after a confirmed publish almost always points to Dispatcher cache invalidation failure. The Dispatcher serves static cached files — if the flush agent did not fire or failed, old content persists indefinitely regardless of what Publish holds.'
+  },
+  {
+    id: 2, type: 'mc', domain: 'Architecture',
+    question: 'A template was marked "Enabled" in the template console but content authors cannot select it when creating a new page under /content/mysite/en. What is missing?',
+    options: ['The template has not been replicated to the Publish instance', 'The template\'s Allowed Paths property has not been configured to include /content/mysite', 'The template author has not assigned a Page Policy to the template', 'The Developer has not annotated the Java Sling Model for the template'],
+    correct: [1],
+    explanation: 'Even an enabled template does not appear in the "Create Page" dialog unless its Allowed Paths property is configured to match the content path where pages will be created. This is configured in Template Properties and restricts where the template can be used.'
+  },
+  {
+    id: 3, type: 'mc', domain: 'Authoring',
+    question: 'An Experience Fragment containing a promotional banner is embedded on 5 different AEM pages. The marketing team needs to update the CTA text. How many places must they edit?',
+    options: ['5 — each embedded instance must be updated individually', '1 — edit the Experience Fragment and the change propagates to all pages referencing it', '5 or 1 — depending on whether the XF variations are synchronized', '2 — the XF master and the published version'],
+    correct: [1],
+    explanation: 'An Experience Fragment is referenced by all pages embedding it. Editing the XF itself and publishing it updates the content everywhere it is used — that is the core reuse benefit of Experience Fragments. No per-page editing is required.'
+  },
+  {
+    id: 4, type: 'mc', domain: 'Multi-Site Management',
+    question: 'A Live Copy page shows a "broken chain" icon on a Text component. What does this indicate?',
+    options: ['The Text component has a JavaScript error preventing it from rendering', 'Inheritance on that component has been cancelled — this component will not be overwritten by future rollouts', 'The Live Copy is out of sync with the blueprint due to a failed rollout', 'The component was added directly to the Live Copy and has no blueprint equivalent'],
+    correct: [1],
+    explanation: 'The broken chain icon in MSM indicates that inheritance has been explicitly cancelled on that specific component. The regional editor has "broken" the link from the blueprint, so future rollouts will not overwrite this component\'s content. This is intentional — it allows local overrides while keeping the rest of the page synchronized.'
+  },
+  {
+    id: 5, type: 'mc', domain: 'Workflows',
+    question: 'A publish workflow is stuck because nobody is completing the legal review task in the AEM Inbox. What is the correct administrative action?',
+    options: ['Restart the AEM Author instance to clear the pending workflow', 'Open the workflow from Tools > Workflow > Instances and delegate or complete the stuck participant step', 'Delete the workflow model and re-create it with a shorter timeout', 'Move the page content to a different path to bypass the legal review requirement'],
+    correct: [1],
+    explanation: 'Running workflow instances can be managed from Tools > Workflow > Instances. Administrators can terminate stuck workflows, advance past a participant step, or delegate the task to another user. Restarting AEM or deleting the model are destructive actions that do not resolve the underlying stuck instance.'
+  },
+  {
+    id: 6, type: 'mc', domain: 'Authoring',
+    question: 'A content author can edit page content but cannot move or delete the page in the Sites console. What permission is most likely missing?',
+    options: ['jcr:read on the page node', 'jcr:modifyProperties on the page node', 'rep:write on the parent folder (required to add or remove child nodes)', 'crx:replicate on the page node'],
+    correct: [2],
+    explanation: 'Moving or deleting a page requires removing the node from its parent. This requires rep:write (or specifically jcr:removeChildNodes) on the PARENT folder, not just on the page itself. jcr:modifyProperties on the page allows updating properties but not node removal. crx:replicate is for publishing, not deletion.'
+  },
+  {
+    id: 7, type: 'tf', domain: 'Assets',
+    question: 'AEM Smart Tags for video assets (generating descriptive tags from video content) requires Dynamic Media to be enabled in addition to the standard Smart Tags configuration.',
+    options: ['True', 'False'],
+    correct: [0],
+    explanation: 'True. Standard Smart Tags (powered by Adobe Sensei) apply to image assets out of the box. Video Smart Tags — which analyze video content to generate descriptive tags — require Dynamic Media to be configured, as Dynamic Media handles the video processing infrastructure that Smart Tagging for video depends on.'
+  },
+  {
+    id: 8, type: 'mc', domain: 'AEMaaCS',
+    question: 'An AEMaaCS Front-End pipeline deployment fails immediately after starting. The developer has not changed any Java code. What is the most likely cause?',
+    options: ['The Cloud Manager environment is not provisioned for Front-End pipelines', 'A build error in the npm/webpack build step — CSS, JS syntax error, or missing dependency', 'The OSGi bundle did not activate after the previous full-stack deployment', 'The Dispatcher configuration has a syntax error blocking the pipeline'],
+    correct: [1],
+    explanation: 'Front-End pipelines compile UI source code (CSS, JavaScript) via npm/webpack. A failure at the build step almost always means a syntax error, failed import, or missing npm dependency in the frontend project. OSGi bundles and Dispatcher configs are not part of the Front-End pipeline scope.'
+  },
+  {
+    id: 9, type: 'mc', domain: 'Headless',
+    question: 'A Content Fragment was created and a GraphQL query against its model returns an empty array. The model is correctly configured. What is the most likely cause?',
+    options: ['The GraphQL endpoint requires a JWT token for all requests', 'The Content Fragment has not been published — it is only visible on Author', 'The Content Fragment model has not been assigned a Processing Profile', 'The GraphQL query syntax uses the wrong field names from a cached schema version'],
+    correct: [1],
+    explanation: 'GraphQL queries against AEMaaCS (or AEM 6.5 with the required package) return only PUBLISHED Content Fragments by default on the Publish tier. A fragment that exists only on Author will not appear in query results. Publishing the Content Fragment resolves this.'
+  },
+  {
+    id: 10, type: 'mc', domain: 'Multi-Site Management',
+    question: 'A blueprint site is updated and published. The 12 regional Live Copy sites should update automatically at that moment. Which rollout trigger achieves this behavior?',
+    options: ['On Modification — rolls out when the blueprint is saved', 'On Activation — rolls out when the blueprint page is published', 'On Request — requires a manual rollout trigger per site', 'On Deployment — runs only when a Cloud Manager pipeline completes'],
+    correct: [1],
+    explanation: '"On Activation" is the rollout trigger that fires when the blueprint page is published (activated). This is the standard trigger for automatic Live Copy synchronization in production — changes propagate when the blueprint content goes live, not when it is merely saved as a draft.'
+  },
+  {
+    id: 11, type: 'mc', domain: 'Authoring',
+    question: 'A workflow requires two sequential approvals — first from legal, then from marketing — before a page is published. A legal reviewer approves their task in the AEM Inbox. Why is the page still not published?',
+    options: ['The Replication Agent on Author is paused', 'The workflow requires the marketing reviewer to also complete their Participant Step before the workflow advances to publish', 'The legal reviewer used "Approve" instead of "Complete" — these are different actions', 'The page has a scheduled publication date that has not yet been reached'],
+    correct: [1],
+    explanation: 'This is the expected, correct behavior of a multi-step workflow. Sequential Participant Steps mean each approver must complete their task in order. The legal approval advances the workflow to the marketing participant step — only after marketing also approves does the workflow reach the publish step. Workflows are designed for exactly this governance chain.'
+  },
+  {
+    id: 12, type: 'mc', domain: 'Authoring',
+    question: 'A campaign team needs stakeholders to preview an entire campaign section (20 pages) before it goes live next month. The live site must not change. Which AEM feature is most appropriate?',
+    options: ['Create a new branch in Cloud Manager with the campaign content', 'Use AEM Launches to prepare all 20 pages as a parallel copy for review', 'Publish the pages to the AEM Preview tier only', 'Create a new Language Copy with the campaign changes'],
+    correct: [1],
+    explanation: 'AEM Launches is purpose-built for this scenario: a Launch creates a parallel editable copy of pages that does not affect the live site. Stakeholders can review all changes in context; on launch day, the Launch is promoted and all pages go live together. Publishing to Preview only is a viable option for a single page but Launches handles the coordinated multi-page case better.'
+  },
+  {
+    id: 13, type: 'mc', domain: 'AEMaaCS',
+    question: 'An AEM 6.5 customer is starting their AEMaaCS migration. The migration team is told that custom workflow steps written in Java must be reviewed for compatibility. What is the primary reason?',
+    options: ['AEMaaCS uses a different programming language for workflow steps', 'AEMaaCS may have deprecated or changed Java APIs used in the 6.5 workflow steps, causing OSGi bundles to fail to activate', 'AEMaaCS workflow steps must be submitted to Adobe for certification before deployment', 'Workflow models from 6.5 cannot be imported into AEMaaCS under any circumstances'],
+    correct: [1],
+    explanation: 'AEMaaCS is built on a newer Sling/OSGi framework and may have deprecated or restructured internal APIs that 6.5 code depended on. Custom workflow steps using these APIs will fail to compile or activate as OSGi bundles — the "Installed" rather than "Active" bundle state is the symptom. API compatibility analysis (using the AEMaaCS SDK) is required before migration.'
+  },
+  {
+    id: 14, type: 'mc', domain: 'Setup & Implementation',
+    question: 'An author used Manage Publication with a scheduled activation time of 9:00 AM. At 9:30 AM, the page is still not live. What should be checked first?',
+    options: ['The Dispatcher cache — it may be serving the old version', 'The Replication Agent queue on Author — the scheduled publish may be stuck or queued', 'The Author instance heap memory — scheduled tasks fail when memory is low', 'The Page Properties to verify the scheduled time was saved correctly'],
+    correct: [1],
+    explanation: 'Scheduled publications use AEM\'s internal scheduler to add a replication job to the queue at the specified time. If the Replication Agent is paused, overloaded, or the Publish instance is unreachable at that moment, the job queues but does not execute. The Replication Queue on Author is the first diagnostic stop for any delayed or missing publication.'
+  },
+  {
+    id: 15, type: 'mc', domain: 'Headless',
+    question: 'A business team is deciding between Content Fragments and Experience Fragments for a new FAQ section. The FAQs must be available in the website AND delivered as JSON to a mobile app. Which should they use?',
+    options: ['Experience Fragments — they support both HTML rendering and JSON export', 'Content Fragments — they are channel-agnostic structured content consumable via GraphQL for both web and app', 'Either works — the difference is only in the authoring UI', 'Experience Fragments for web, Content Fragments for mobile — use both with a sync mechanism'],
+    correct: [1],
+    explanation: 'Content Fragments are channel-agnostic structured content with no built-in layout. They are consumed via AEM\'s GraphQL API as JSON — the website and mobile app both query the same data. Experience Fragments have an opinionated HTML layout and are designed for page-embedded reuse, not headless JSON delivery to apps.'
+  },
+  {
+    id: 16, type: 'mc', domain: 'Architecture',
+    question: 'A Dispatcher configuration change is needed to support a new URL pattern in AEMaaCS. How must this change be deployed?',
+    options: ['SSH into the Dispatcher server and edit the httpd.conf file directly', 'Upload the updated configuration via the AEM Author > Tools > Cloud Services console', 'Commit the Dispatcher config files to the Git repository and deploy via Cloud Manager pipeline', 'Edit the Dispatcher rules via the AEM Developer Console in Cloud Manager'],
+    correct: [2],
+    explanation: 'In AEMaaCS, Dispatcher configuration is stored as code in the Git repository (typically under dispatcher.cloud/). Changes deploy via Cloud Manager — either a full-stack pipeline or a config pipeline. Direct SSH access to the Dispatcher server is not available in AEMaaCS; all infrastructure is managed by Adobe.'
+  },
+  {
+    id: 17, type: 'mc', domain: 'Assets',
+    question: 'A media company needs watermark renditions generated automatically when photographers upload images to a specific DAM folder. Which configuration achieves this with no custom code?',
+    options: ['Configure a Metadata Schema with a "Watermark" required field on the folder', 'Create a Processing Profile with a custom image rendition step and apply it to the folder', 'Set up a Workflow Launcher that fires on asset creation and runs a Watermark process step', 'Enable Smart Crop in Dynamic Media and configure a focal point for each image'],
+    correct: [1],
+    explanation: 'Processing Profiles define what renditions are auto-generated when assets are uploaded. Applied to a specific folder, they run automatically on every new upload. For watermarking, a custom Processing Profile worker (using Asset Compute Service in AEMaaCS) can apply the watermark rendition without requiring any per-upload manual steps.'
+  },
+  {
+    id: 18, type: 'mc', domain: 'Authoring',
+    question: 'Content authors need AEM to prevent search engines from indexing a "Thank You" confirmation page after form submission. Which is the most appropriate solution?',
+    options: ['Delete the page after each session so search engines cannot crawl it', 'Add a "noindex" robots meta tag to the page via Page Properties > Advanced', 'Create a CUG on the page so only authenticated users can access it', 'Set the page\'s replication state to "Not Activated" so Publish does not serve it'],
+    correct: [1],
+    explanation: 'Page Properties > Advanced tab allows authors to add a "robots" configuration that injects a noindex meta tag, signaling to search engines not to index the page. This is the author-facing, no-code solution. A CUG prevents access entirely (not just indexing); deactivating the page makes it unreachable to all visitors.'
+  },
+  {
+    id: 19, type: 'mc', domain: 'Workflows',
+    question: 'Content authors report that workflow tasks they had in the AEM Inbox yesterday have disappeared. Nobody approved or rejected them. What is the most likely explanation?',
+    options: ['The AEM Author instance was restarted and Inbox state was lost', 'An administrator terminated the running workflow instances, which removes all associated Inbox tasks', 'The tasks auto-expired based on an AEM notification timeout setting', 'The workflow model was updated and all running instances adopted the new version'],
+    correct: [1],
+    explanation: 'Terminating a running workflow instance from Tools > Workflow > Instances removes that workflow\'s Inbox tasks from all participants. This is a common cause of mysteriously disappearing tasks — an administrator cleaned up stuck or unwanted workflow instances. AEM does not auto-expire or delete Inbox tasks based on notification settings alone.'
+  },
+  {
+    id: 20, type: 'mc', domain: 'Authoring',
+    question: 'A Launch was promoted but several pages show broken image references after promotion. What is the most common cause of this issue?',
+    options: ['The Launch was promoted before the scheduled date, causing a version conflict', 'Assets referenced by the Launch pages were not included in or promoted with the Launch', 'The Launch pages were created from a different template than the live pages', 'The Dispatcher did not flush the cache before the Launch promotion completed'],
+    correct: [1],
+    explanation: 'Broken references after a Launch promotion occur when the Launch included page edits that referenced new or updated assets, but those assets were not published to the live Publish instance. Pages promote correctly but the assets they reference are not available. Always ensure referenced assets are published separately before or alongside Launch promotion.'
+  },
+  {
+    id: 21, type: 'mc', domain: 'Multi-Site Management',
+    question: 'A blueprint page\'s MSM rollout configuration uses "On Activation." The blueprint page is published (activated) but the Live Copies have not updated 30 minutes later. What should be investigated?',
+    options: ['The Live Copy sites may have had inheritance cancelled at the page level', 'The rollout queue may be backed up or the Replication Agent is paused', 'The rollout configuration was removed from the page and must be re-added', 'Both A and B could be contributing — check inheritance status AND the replication queue'],
+    correct: [3],
+    explanation: 'Two issues can independently cause this: (1) if inheritance was cancelled at the page level on the Live Copy, that page will never receive rollouts regardless of the trigger; (2) if the replication queue is paused or the Publish instance is unreachable, rollout jobs queue but do not execute. Both should be checked when Live Copies fail to update.'
+  },
+  {
+    id: 22, type: 'mc', domain: 'Assets',
+    question: 'A Metadata Schema is applied to a DAM folder. Existing assets in the folder show the correct metadata fields. New assets uploaded to the same folder do not show these fields. What is most likely wrong?',
+    options: ['The schema must be manually applied to each new asset individually', 'The schema is applied to the folder but the "Apply to Subfolders" option was not enabled for nested uploads', 'New assets trigger a different default schema before the folder-level schema is applied', 'The Processing Profile on the folder overrides the Metadata Schema on upload'],
+    correct: [1],
+    explanation: 'Metadata Schemas applied to a folder affect assets in that folder. If new assets are being uploaded to subfolders and the schema was not configured with "Apply to Subfolders" enabled, subfolder assets will use the default schema. For flat folders, a schema reassignment or reprocessing step may be needed if schema was applied after assets were uploaded.'
+  },
+  {
+    id: 23, type: 'mc', domain: 'Governance',
+    question: 'A business practitioner is asked: "Who in the AEM persona model is responsible for controlling which components appear in the authoring component browser?" What is the correct answer?',
+    options: ['The Developer — who bundles component allow-lists in the OSGi configuration', 'The Content Author — who adds components to their Favorites in the component browser', 'The Template Author — who configures Layout Container policies in the Template Editor', 'The AEM Administrator — who manages ACLs on the /libs/components path'],
+    correct: [2],
+    explanation: 'Template Authors sit between Developers (who create components) and Content Authors (who use them). They configure Editable Template Policies — including which components appear in the component browser — through the Template Editor UI without writing code. This is a key responsibility distinction tested by the AD0-E121 exam.'
+  },
+  {
+    id: 24, type: 'mc', domain: 'Setup & Implementation',
+    question: 'An AEM implementation team is asked to ensure that OSGi configurations differ between the AEM Author and Publish environments without maintaining two separate codebases. How is this achieved?',
+    options: ['Maintain two separate Git branches — one for Author, one for Publish — and merge before deployment', 'Store configurations in runmode-specific folders: config.author/ for Author, config.publish/ for Publish, in the same codebase', 'Use a Sling Feature Model (feature flags) to toggle configurations at deployment time', 'Configure AEM Author to push its OSGi settings to Publish automatically on startup'],
+    correct: [1],
+    explanation: 'OSGi runmode folders (config.author/, config.publish/, config.dev/, etc.) allow a single codebase to deliver environment-appropriate configurations. AEM reads the correct folder based on the active runmode at startup. This is the standard pattern in both on-premise and AEMaaCS projects — no separate branches required.'
+  },
+  {
+    id: 25, type: 'mc', domain: 'Headless',
+    question: 'A development team\'s AEM headless React app is experiencing slow page loads because every navigation triggers a new GraphQL request. What is the most effective AEM-native solution?',
+    options: ['Increase the AEM Publish instance heap size to handle more concurrent GraphQL requests', 'Implement GraphQL Persisted Queries and configure the Dispatcher to cache their responses', 'Switch from Content Fragments to Experience Fragments for faster rendering', 'Enable Smart Tags on all Content Fragments to improve query indexing speed'],
+    correct: [1],
+    explanation: 'GraphQL Persisted Queries convert POST-based ad-hoc queries to GET-based named queries. GET requests can be cached by the Dispatcher and CDN — meaning repeat navigations serve cached JSON instead of hitting the AEM Publish tier. This is the recommended performance optimization for AEM headless apps in production.'
+  },
+  {
+    id: 26, type: 'mc', domain: 'Components',
+    question: 'A developer is building a new AEM component. The team decides to use HTL (HTML Template Language) rather than JSP. Which is the most accurate business-level reason for this choice?',
+    options: ['HTL files deploy faster through Cloud Manager pipelines than JSP files', 'HTL enforces context-aware XSS escaping by default, reducing the risk of security vulnerabilities in rendered output', 'HTL components are automatically compatible with AEM\'s Style System; JSP components are not', 'HTL is required by AEM as a Cloud Service; JSP files are blocked at deployment'],
+    correct: [1],
+    explanation: 'HTL\'s primary business-level advantage over JSP is security: it applies context-aware XSS escaping by default when outputting variables, dramatically reducing the risk of cross-site scripting vulnerabilities. Developers must explicitly opt out of escaping (rarely justified), whereas JSP requires explicit escaping on every output — a frequent source of vulnerabilities in legacy AEM components.'
+  },
+  {
+    id: 27, type: 'mc', domain: 'Configuration',
+    question: 'A customer wants AEM to automatically start a review workflow every time an author creates a new page under /content/campaigns. Which AEM feature triggers workflows based on JCR events?',
+    options: ['A Scheduled Workflow running every hour to check for new pages', 'A Workflow Launcher configured with the event type "Node Created" on path /content/campaigns', 'A Sling Event Handler OSGi service listening for JCR events', 'A Replication Agent post-processor that fires on every content activation'],
+    correct: [1],
+    explanation: 'Workflow Launchers listen for JCR events (node created, modified, deleted) on a configured path pattern and trigger the specified workflow model when conditions match. This is the standard, no-code mechanism for automatically starting workflows based on content operations — no Sling Event Handler or custom code required.'
+  },
+  {
+    id: 28, type: 'mc', domain: 'Architecture',
+    question: 'Which statement best describes why the /libs path in AEM should never be directly modified?',
+    options: ['The /libs path is read-only at the JCR level — ACLs prevent any writes to it', 'Adobe service packs and AEM upgrades overwrite /libs, meaning any direct changes will be lost', 'The /libs path is stored on a separate read-only disk partition on AEM servers', 'Modifying /libs triggers an automatic Cloud Manager pipeline that reverts the changes'],
+    correct: [1],
+    explanation: 'The canonical reason to never modify /libs is that Adobe\'s service packs and AEM upgrades overwrite this path — any direct changes will be silently lost on the next upgrade. The correct pattern is to overlay the needed component or script in /apps at the matching relative path, where Sling Resource Resolution ensures /apps takes precedence without touching /libs.'
+  },
+  {
+    id: 29, type: 'mc', domain: 'Governance',
+    question: 'A regulatory agency requires that authenticated external partners access specific AEM Sites pages while the rest of the site remains publicly accessible. Which feature handles this with no custom code?',
+    options: ['A Dispatcher allow/deny rule restricting those URLs to specific IP ranges', 'A Closed User Group (CUG) on the restricted content path — only named groups can view those pages', 'An OSGi servlet filter that validates the partner\'s session before serving content', 'A Sling Authentication Handler pointing those URLs to a custom login form'],
+    correct: [1],
+    explanation: 'Closed User Groups (CUGs) are AEM\'s built-in access control mechanism for restricting page visibility on the Publish tier. Configured on a content path, they require authentication and limit viewing to only the groups named in the CUG. The rest of the site remains unaffected. No custom code, Dispatcher rule changes, or custom servlet filters are needed.'
+  },
+  {
+    id: 30, type: 'mc', domain: 'Assets',
+    question: 'A DAM administrator needs to demonstrate which AEM Assets are driving the most engagement on the published website. Which capability integrates with Adobe Analytics to surface per-asset impression and click data?',
+    options: ['AEM Assets Smart Tags — tracks tag-based search usage', 'Asset Insights — surfaces impression and click data per asset in the AEM Assets UI', 'DAM Asset Reports (Download/Upload report) — shows asset transfer activity', 'Dynamic Media Analytics — tracks video play events only'],
+    correct: [1],
+    explanation: 'Asset Insights integrates with Adobe Analytics to capture page impressions and click-through data for assets rendered in AEM pages. The data surfaces directly in the AEM Assets UI per asset, enabling stakeholders to see which images and documents drive the most engagement — useful for justifying DAM investment and informing content strategy.'
+  },
+  {
+    id: 31, type: 'mc', domain: 'Setup & Implementation',
+    question: 'An author publishes a page using "Manage Publication." The page is live but a referenced Content Fragment still shows the old text. What was missed during publication?',
+    options: ['Content Fragments must be published separately — they are independent assets in /content/dam/cf', 'The page template was not published and is pulling the old CF version', 'The Dispatcher is caching the CF JSON endpoint and must be manually flushed', 'Content Fragments automatically synchronize with page publish events'],
+    correct: [0],
+    explanation: 'Content Fragments are stored as assets under /content/dam and must be published independently from the pages that reference them. When authoring publishes a page, referenced CFs do not automatically publish unless explicitly included in the publication scope via Manage Publication\'s "Include Referenced Content" option. This is a common oversight in content operations workflows.'
+  },
+  {
+    id: 32, type: 'mc', domain: 'AEMaaCS',
+    question: 'A developer team migrating to AEMaaCS discovers their custom component makes calls to the com.day.cq.wcm.core internal API. The OSGi bundle shows as "Installed" not "Active" after deployment. Why?',
+    options: ['The component must be re-registered in the Component Registry via the Developer Console', 'The internal API package is not exported in AEMaaCS — the bundle has unresolved imports and cannot start', 'The bundle needs a higher OSGi service ranking to activate before platform bundles', 'The component HTL script file was not included in the deployment package'],
+    correct: [1],
+    explanation: '"Installed" (not "Active") means OSGi could not resolve the bundle\'s package imports. Internal AEM APIs (com.day.cq packages not in the public API) may not be exported in AEMaaCS\'s OSGi container. The fix: migrate to the public AEM API or use an approved alternative. The AEMaaCS SDK\'s uber-jar contains only the publicly supported API surface.'
+  },
+  {
+    id: 33, type: 'multi', domain: 'Governance', selectCount: 2,
+    question: 'A content operations team wants to ensure all new assets uploaded to /content/dam/brand have a required "Campaign" metadata field AND auto-generate a 800x600 web rendition. Which two configurations achieve this?',
+    options: ['A Metadata Schema with a required "Campaign" field, applied to the /content/dam/brand folder', 'A Processing Profile with an image rendition at 800x600, applied to the /content/dam/brand folder', 'A Workflow Launcher that fires on asset creation and runs a metadata validation step', 'A CUG on /content/dam/brand that restricts uploads to the "brand-editors" group'],
+    correct: [0, 1],
+    explanation: 'Metadata Schemas define required metadata fields per folder; Processing Profiles define auto-generated renditions per folder. Both are independently applied to DAM folders in folder Properties. A Workflow Launcher could handle this too, but Schemas and Processing Profiles are the purpose-built no-code solutions that do not require workflow model development.'
+  },
+  {
+    id: 34, type: 'mc', domain: 'Architecture',
+    question: 'A business practitioner needs to explain to stakeholders why AEM as a Cloud Service is described as "evergreen." What is the most accurate explanation?',
+    options: ['AEMaaCS uses green-colored branding to indicate its cloud-native status', 'AEMaaCS automatically receives continuous platform updates from Adobe — customers always run the latest version without planning major upgrade projects', 'AEMaaCS includes a built-in CDN with green energy-powered data centers', 'AEMaaCS\'s code is stored in a "green branch" in Cloud Manager that is always production-ready'],
+    correct: [1],
+    explanation: '"Evergreen" means AEMaaCS customers never run an outdated version of the platform. Adobe pushes continuous updates automatically — no Service Pack planning, no "are we on 6.5.15 yet?" conversations. This is a fundamental operational difference from AEM 6.5, where customers plan and execute Service Pack upgrades on their own schedule.'
+  },
+  {
+    id: 35, type: 'mc', domain: 'Configuration',
+    question: 'An AEM implementation is going live. The team is asked to verify that no sensitive AEM internals (such as /crx, /system/console, /etc) are publicly accessible. Where is this configured?',
+    options: ['In OSGi using the Apache Sling Authentication Handler configuration', 'In the AEM Author\'s User Access Management console', 'In the Dispatcher configuration — allow/deny rules in the dispatcher.any or httpd.conf files', 'In Cloud Manager\'s WAF (Web Application Firewall) rules panel'],
+    correct: [2],
+    explanation: 'Blocking internal AEM paths from public access is handled in Dispatcher configuration via allow/deny filter rules. The Dispatcher is the first layer of defense and should deny requests to /crx, /system, /libs, /etc (and other internal paths) by default. Adobe provides security-hardened Dispatcher configuration templates that include these rules as a starting point.'
+  }
+];
+
+// ─── Timer ──────────────────────────────────────────────────────────────────
+function startTimer() {
+  secondsLeft = TIMER_SECONDS;
+  updateTimerDisplay();
+  timerInterval = setInterval(() => {
+    secondsLeft--;
+    updateTimerDisplay();
+    if (secondsLeft <= 0) { clearInterval(timerInterval); finishExam(true); }
+  }, 1000);
+}
+function stopTimer() { if (timerInterval) { clearInterval(timerInterval); timerInterval = null; } }
+function updateTimerDisplay() {
+  const el = document.getElementById('timerDisplay');
+  if (!el) return;
+  const m = Math.floor(secondsLeft / 60), s = secondsLeft % 60;
+  el.textContent = `⏱ ${m}:${s.toString().padStart(2,'0')}`;
+  el.className = secondsLeft <= 300 ? 'danger' : secondsLeft <= 600 ? 'warning' : '';
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+function initDomains() {
+  domainMap = {};
+  questions.forEach(q => { if (!domainMap[q.domain]) domainMap[q.domain]={correct:0,total:0}; domainMap[q.domain].total++; });
+}
+function setProgress(pct) { document.getElementById('progressFill').style.width = pct + '%'; }
+const LETTERS = ['A','B','C','D','E'];
+
+// ─── Start ───────────────────────────────────────────────────────────────────
+function renderStart() {
+  setProgress(0);
+  document.getElementById('timerDisplay').textContent = '⏱ 70:00';
+  document.getElementById('app').innerHTML = `
+    <div class="start-card">
+      <h2>Final Mock Exam + Gap Review</h2>
+      <p class="description">35 scenario-focused questions written for your final prep session. No explanations during the exam. Results show domain scores, a gap review identifying which exercises to revisit, and explanations for every missed question.</p>
+      <div class="exam-rules">
+        <strong>Exam simulation rules:</strong><br>
+        • 70-minute countdown starts when you click Start<br>
+        • No per-question feedback — work through all questions, then review<br>
+        • Results include a Gap Review: specific exercises to revisit per weak domain<br>
+        • Treat this as the real exam — no pausing
+      </div>
+      <div class="stat-row">
+        <div class="stat-box"><div class="num">35</div><div class="lbl">Questions</div></div>
+        <div class="stat-box"><div class="num">70</div><div class="lbl">Minutes</div></div>
+        <div class="stat-box"><div class="num">Gap</div><div class="lbl">Review included</div></div>
+      </div>
+      <button class="btn btn-primary" onclick="startExam()">Start Final Exam</button>
+    </div>
+  `;
+}
+
+function startExam() {
+  questions = shuffle(ALL_QUESTIONS);
+  idx = 0; score = 0; answers = [];
+  initDomains();
+  startTimer();
+  renderQuestion();
+}
+
+// ─── Question ────────────────────────────────────────────────────────────────
+function renderQuestion() {
+  const q = questions[idx];
+  setProgress((idx / questions.length) * 100);
+  let hint = q.type==='tf' ? 'True or False' : q.type==='multi' ? `Select ${q.selectCount} answers` : 'Select one answer';
+  const optType = q.type==='multi' ? 'square' : '';
+  const optionsHTML = q.options.map((opt,i) => `
+    <div class="option" id="opt-${i}" onclick="toggleOption(${i})">
+      <div class="opt-indicator ${optType}"><span class="opt-check">✓</span></div>
+      <span class="opt-label"><span class="opt-letter">${LETTERS[i]}.</span>${opt}</span>
+    </div>`).join('');
+
+  document.getElementById('app').innerHTML = `
+    <div class="question-card">
+      <div class="q-meta">
+        <span class="q-counter">Question ${idx+1} of ${questions.length}</span>
+        <span class="domain-tag">${q.domain}</span>
+      </div>
+      <div class="q-text">${q.question}</div>
+      <div class="q-hint">${hint}</div>
+      <div class="options">${optionsHTML}</div>
+      <div class="actions">
+        <div class="q-num-display">${idx+1} / ${questions.length}</div>
+        <button class="btn btn-primary" id="nextBtn" onclick="advance()" disabled>
+          ${idx < questions.length-1 ? 'Next →' : 'Finish Exam'}
+        </button>
+      </div>
+    </div>`;
+
+  selected = []; answered = false;
+}
+
+function toggleOption(i) {
+  if (answered) return;
+  const q = questions[idx];
+  const el = document.getElementById(`opt-${i}`);
+  if (q.type==='multi') {
+    if (selected.includes(i)) { selected=selected.filter(x=>x!==i); el.classList.remove('selected'); }
+    else { selected.push(i); el.classList.add('selected'); }
+    document.getElementById('nextBtn').disabled = selected.length !== q.selectCount;
+  } else {
+    selected=[i];
+    document.querySelectorAll('.option').forEach((e,j)=>e.classList.toggle('selected',j===i));
+    document.getElementById('nextBtn').disabled=false;
+  }
+}
+
+function advance() {
+  answered=true;
+  const q=questions[idx];
+  const sortSel=[...selected].sort((a,b)=>a-b), sortCor=[...q.correct].sort((a,b)=>a-b);
+  const correct=sortSel.length===sortCor.length&&sortSel.every((v,i)=>v===sortCor[i]);
+  if (correct) { score++; domainMap[q.domain].correct++; }
+  answers.push({q,selected:[...selected],correct});
+  idx++;
+  if (idx>=questions.length) finishExam(false);
+  else renderQuestion();
+}
+
+// ─── Results + Gap Review ────────────────────────────────────────────────────
+function finishExam(timedOut) {
+  stopTimer();
+  setProgress(100);
+  document.getElementById('timerDisplay').textContent='';
+
+  const pct = answers.length>0 ? Math.round((score/questions.length)*100) : 0;
+  let msg, msgColor;
+  if (pct>=80)      { msg='Strong result. You are ready for the real exam.'; msgColor='#2d9e47'; }
+  else if (pct>=64) { msg='Passing range. Address the gaps below before exam day.'; msgColor='#e07b00'; }
+  else              { msg='Below passing. Focus your remaining prep on the gap review below.'; msgColor='#d93025'; }
+
+  const timedOutNote = timedOut ? `<div style="background:#fff3f2;border-left:3px solid #d93025;padding:10px 14px;border-radius:4px;font-size:14px;margin-bottom:20px;">⏱ Time expired — ${answers.length} of ${questions.length} questions answered.</div>` : '';
+
+  // Domain scores
+  const bdHTML = Object.entries(domainMap).map(([domain,data]) => {
+    const p=Math.round((data.correct/data.total)*100);
+    const color=p>=80?'#2d9e47':p>=60?'#e07b00':'#d93025';
+    return `<div class="bd-item"><div class="bd-domain">${domain}</div><div class="bd-score" style="color:${color}">${data.correct}/${data.total} <span class="bd-of">${p}%</span></div></div>`;
+  }).join('');
+
+  // Gap review — domains below 70%
+  const weakDomains = Object.entries(domainMap).filter(([,d])=>Math.round((d.correct/d.total)*100)<70);
+  let gapHTML = '';
+  if (weakDomains.length === 0) {
+    gapHTML = `<div style="color:#2d9e47;font-weight:700;text-align:center;padding:16px 0;">No significant gaps — all domains above 70%. You are ready.</div>`;
+  } else {
+    gapHTML = weakDomains.map(([domain,data]) => {
+      const p=Math.round((data.correct/data.total)*100);
+      const exercises=(GAP_EXERCISES[domain]||['Review this domain in the Exercises tab of the Study Tracker']);
+      return `<div class="gap-card">
+        <div class="gap-domain">${domain}</div>
+        <div class="gap-score">${data.correct}/${data.total} correct (${p}%) — needs work</div>
+        <ul class="gap-exercises">${exercises.map(e=>`<li>${e}</li>`).join('')}</ul>
+      </div>`;
+    }).join('');
+  }
+
+  // Missed questions with explanations
+  const wrongReview = answers.filter(a=>!a.correct).map(a => {
+    const {q,selected:sel}=a;
+    const selLabels=sel.map(i=>LETTERS[i]+'. '+q.options[i]).join(' | ');
+    const corLabels=q.correct.map(i=>LETTERS[i]+'. '+q.options[i]).join(' | ');
+    return `<div class="review-item wrong">
+      <div class="review-q">${q.domain} — ${q.question}</div>
+      <div class="review-row"><span class="lbl">Your answer:</span>${selLabels||'(no answer)'}</div>
+      <div class="review-row"><span class="lbl">Correct:</span>${corLabels}</div>
+      <div class="review-exp">${q.explanation}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('app').innerHTML = `
+    <div class="results-card">
+      ${timedOutNote}
+      <div class="eyebrow">Final Mock Exam Complete</div>
+      <div class="big-score">${pct}%</div>
+      <div class="score-sub">${score} of ${questions.length} correct</div>
+      <div class="verdict-msg" style="color:${msgColor}">${msg}</div>
+
+      <div class="section-head">Score by Domain</div>
+      <div class="breakdown-grid">${bdHTML}</div>
+
+      <div class="section-head">Gap Review — Exercises to Revisit</div>
+      ${gapHTML}
+
+      ${wrongReview ? `<div class="section-head">Missed Questions — Full Explanations</div>${wrongReview}` : '<div style="text-align:center;color:#2d9e47;font-weight:700;padding:20px 0;">All questions correct!</div>'}
+
+      <div class="results-actions">
+        <button class="btn btn-primary" onclick="renderStart()">Retake Final Exam</button>
+      </div>
+      <a class="back-link" href="javascript:history.back()">← Back to Study Tracker</a>
+    </div>`;
+}
+
+renderStart();
+</script>
+</body>
+</html>

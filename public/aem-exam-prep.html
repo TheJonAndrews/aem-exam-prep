@@ -409,6 +409,17 @@
       font-weight: 400;
       color: #aaa;
     }
+
+    /* TIMER */
+    #timerDisplay {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      opacity: 0.95;
+    }
+    #timerDisplay.warning { color: #ffcb00; }
+    #timerDisplay.danger  { color: #ff6b6b; animation: pulse 1s infinite; }
+    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
   </style>
 </head>
 <body>
@@ -418,7 +429,7 @@
     <div class="eyebrow">Adobe Certification Prep</div>
     <h1>AEM Business Practitioner Expert</h1>
   </div>
-  <div id="headerRight"></div>
+  <div id="headerRight"><span id="timerDisplay"></span></div>
 </header>
 
 <div class="progress-track">
@@ -818,6 +829,39 @@ const ALL_QUESTIONS = [
   }
 ];
 
+// ─── Timer ───────────────────────────────────────────────────────────────────
+const TIMED_MODE = new URLSearchParams(location.search).has('timed');
+const TIMER_SECONDS = 70 * 60; // 70 minutes proportional to real exam
+let timerInterval = null;
+let secondsLeft = TIMER_SECONDS;
+
+function startTimer() {
+  if (!TIMED_MODE) return;
+  secondsLeft = TIMER_SECONDS;
+  updateTimerDisplay();
+  timerInterval = setInterval(() => {
+    secondsLeft--;
+    updateTimerDisplay();
+    if (secondsLeft <= 0) {
+      clearInterval(timerInterval);
+      renderResults(true);
+    }
+  }, 1000);
+}
+
+function stopTimer() {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+}
+
+function updateTimerDisplay() {
+  const el = document.getElementById('timerDisplay');
+  if (!el || !TIMED_MODE) return;
+  const m = Math.floor(secondsLeft / 60);
+  const s = secondsLeft % 60;
+  el.textContent = `⏱ ${m}:${s.toString().padStart(2,'0')}`;
+  el.className = secondsLeft <= 300 ? 'danger' : secondsLeft <= 600 ? 'warning' : '';
+}
+
 // ─── State ───────────────────────────────────────────────────────────────────
 let questions = [];
 let idx = 0;
@@ -852,9 +896,13 @@ const LETTERS = ['A', 'B', 'C', 'D', 'E'];
 // ─── Start Screen ─────────────────────────────────────────────────────────────
 function renderStart() {
   setProgress(0);
-  document.getElementById('headerRight').textContent = '';
+  const timerEl = document.getElementById('timerDisplay');
+  if (timerEl) timerEl.textContent = TIMED_MODE ? '⏱ 70:00' : '';
   const domains = [...new Set(ALL_QUESTIONS.map(q => q.domain))];
   const pills = domains.map(d => `<span class="pill">${d}</span>`).join('');
+  const timedNote = TIMED_MODE
+    ? '<p style="background:#fff3f2;border-left:3px solid #eb1000;padding:10px 14px;border-radius:4px;font-size:14px;color:#555;margin-bottom:24px;">⏱ <strong>Timed mode:</strong> 70 minutes — proportional to the real AD0-E121 (50 questions, 100 min). Timer starts when you click Start.</p>'
+    : '';
   document.getElementById('app').innerHTML = `
     <div class="start-card">
       <h2>AEM Business Practitioner Expert</h2>
@@ -863,9 +911,10 @@ function renderStart() {
         weighted toward your identified gaps. Each question shows the correct answer and a plain-English
         explanation after you submit.
       </p>
+      ${timedNote}
       <div class="stat-row">
         <div class="stat-box"><div class="num">35</div><div class="lbl">Questions</div></div>
-        <div class="stat-box"><div class="num">3</div><div class="lbl">Question types</div></div>
+        <div class="stat-box"><div class="num">${TIMED_MODE ? '70' : '∞'}</div><div class="lbl">${TIMED_MODE ? 'Minutes' : 'Self-paced'}</div></div>
         <div class="stat-box"><div class="num">${domains.length}</div><div class="lbl">Topic areas</div></div>
       </div>
       <div class="domain-pills">${pills}</div>
@@ -880,6 +929,7 @@ function startQuiz() {
   idx = 0;
   score = 0;
   initDomains();
+  startTimer();
   renderQuestion();
 }
 
@@ -995,9 +1045,11 @@ function advance() {
 }
 
 // ─── Results ──────────────────────────────────────────────────────────────────
-function renderResults() {
+function renderResults(timedOut) {
+  stopTimer();
   setProgress(100);
-  document.getElementById('headerRight').textContent = 'Complete';
+  const timerEl = document.getElementById('timerDisplay');
+  if (timerEl) timerEl.textContent = '';
 
   const pct = Math.round((score / questions.length) * 100);
   let msg, msgColor;
@@ -1016,8 +1068,10 @@ function renderResults() {
     `;
   }).join('');
 
+  const timedOutBanner = timedOut ? `<p style="background:#fff3f2;border-left:3px solid #eb1000;padding:10px 14px;border-radius:4px;font-size:14px;color:#555;margin-bottom:24px;">⏱ Time expired — ${score} of ${idx} questions answered.</p>` : '';
   document.getElementById('app').innerHTML = `
     <div class="results-card">
+      ${timedOutBanner}
       <div class="eyebrow">Practice Test Complete</div>
       <div class="big-score">${pct}%</div>
       <div class="score-sub">${score} of ${questions.length} correct</div>
@@ -1033,6 +1087,7 @@ function restartQuiz() {
   idx = 0;
   score = 0;
   initDomains();
+  startTimer();
   renderQuestion();
 }
 

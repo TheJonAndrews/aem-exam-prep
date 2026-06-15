@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AEM Mock Exam — Full Timed Simulation</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f4f4f4; color: #2c2c2c; min-height: 100vh; }
+    header { background: #455A64; color: white; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+    header .title-block .eyebrow { font-size: 10px; opacity: 0.75; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 3px; }
+    header h1 { font-size: 17px; font-weight: 600; }
+    #timerDisplay { font-size: 15px; font-weight: 700; letter-spacing: 0.5px; }
+    #timerDisplay.warning { color: #ffcb00; }
+    #timerDisplay.danger  { color: #ff6b6b; animation: pulse 1s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;}50%{opacity:0.5;} }
+    .progress-track { background: rgba(0,0,0,0.15); height: 3px; position: sticky; top: 51px; z-index: 99; }
+    .progress-fill { background: #ffcb00; height: 3px; transition: width 0.35s ease; }
+    .container { max-width: 740px; margin: 36px auto; padding: 0 20px 60px; }
+    .start-card { background: white; border-radius: 10px; padding: 44px 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.07); }
+    .start-card h2 { font-size: 22px; margin-bottom: 10px; }
+    .start-card .description { color: #555; font-size: 15px; line-height: 1.6; margin-bottom: 20px; }
+    .exam-rules { background: #ECEFF1; border-left: 4px solid #455A64; border-radius: 4px; padding: 14px 18px; margin-bottom: 28px; font-size: 14px; color: #444; line-height: 1.7; }
+    .exam-rules strong { color: #263238; }
+    .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 32px; }
+    .stat-box { background: #fafafa; border: 1px solid #e8e8e8; border-radius: 8px; padding: 16px; text-align: center; }
+    .stat-box .num { font-size: 30px; font-weight: 700; color: #455A64; }
+    .stat-box .lbl { font-size: 12px; color: #888; margin-top: 2px; }
+    .question-card { background: white; border-radius: 10px; padding: 32px; box-shadow: 0 2px 10px rgba(0,0,0,0.07); }
+    .q-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
+    .q-counter { font-size: 13px; color: #888; }
+    .domain-tag { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; background: #ECEFF1; color: #455A64; padding: 4px 9px; border-radius: 4px; }
+    .q-text { font-size: 17px; font-weight: 500; line-height: 1.55; margin-bottom: 6px; }
+    .q-hint { font-size: 13px; color: #999; margin-bottom: 22px; }
+    .options { display: flex; flex-direction: column; gap: 9px; margin-bottom: 24px; }
+    .option { display: flex; align-items: flex-start; gap: 12px; padding: 13px 15px; border: 2px solid #e5e5e5; border-radius: 7px; cursor: pointer; transition: border-color 0.12s, background 0.12s; user-select: none; }
+    .option:hover:not(.locked) { border-color: #455A64; background: #f5f7f8; }
+    .option.selected { border-color: #455A64; background: #ECEFF1; }
+    .option.locked { cursor: default; }
+    .opt-indicator { width: 18px; height: 18px; border: 2px solid #ccc; border-radius: 50%; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; }
+    .opt-indicator.square { border-radius: 4px; }
+    .option.selected .opt-indicator { border-color: #455A64; background: #455A64; }
+    .opt-check { color: white; font-size: 10px; font-weight: 700; display: none; }
+    .option.selected .opt-check { display: block; }
+    .opt-label { font-size: 15px; line-height: 1.45; }
+    .opt-letter { font-weight: 600; color: #aaa; margin-right: 5px; }
+    .actions { display: flex; justify-content: space-between; align-items: center; }
+    .q-num-display { font-size: 13px; color: #aaa; }
+    .btn { padding: 11px 26px; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.12s, opacity 0.12s; }
+    .btn-primary { background: #455A64; color: white; }
+    .btn-primary:hover:not(:disabled) { background: #37474F; }
+    .btn-primary:disabled { opacity: 0.35; cursor: not-allowed; }
+    .btn-ghost { background: #2c2c2c; color: white; margin-left: 10px; }
+    .btn-ghost:hover { background: #444; }
+    /* RESULTS */
+    .results-card { background: white; border-radius: 10px; padding: 44px 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.07); }
+    .results-card .eyebrow { font-size: 11px; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; text-align:center; }
+    .big-score { font-size: 80px; font-weight: 700; color: #455A64; line-height: 1; margin-bottom: 6px; text-align:center; }
+    .score-sub { font-size: 16px; color: #888; margin-bottom: 12px; text-align:center; }
+    .verdict-msg { font-size: 15px; font-weight: 500; margin-bottom: 32px; text-align:center; }
+    .breakdown-section { margin-bottom: 32px; }
+    .breakdown-section h3 { font-size: 13px; font-weight: 700; color: #999; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; }
+    .breakdown-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 12px; }
+    .bd-item { background: #f8f8f8; border-radius: 7px; padding: 14px 16px; }
+    .bd-domain { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #999; margin-bottom: 5px; }
+    .bd-score { font-size: 20px; font-weight: 700; }
+    .bd-of { font-size: 13px; font-weight: 400; color: #aaa; }
+    .review-section { margin-top: 28px; }
+    .review-item { border: 1px solid #e5e5e5; border-radius: 8px; padding: 16px 18px; margin-bottom: 12px; }
+    .review-item.correct { border-left: 4px solid #2d9e47; }
+    .review-item.wrong { border-left: 4px solid #d93025; }
+    .review-q { font-size: 14px; font-weight: 600; color: #2c2c2c; margin-bottom: 8px; }
+    .review-row { font-size: 13px; margin-bottom: 4px; }
+    .review-row .lbl { color: #999; font-weight: 600; margin-right: 6px; }
+    .review-exp { font-size: 13px; color: #555; line-height: 1.6; margin-top: 8px; padding-top: 8px; border-top: 1px solid #f0f0f0; }
+    .results-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 28px; }
+    .back-link { display: inline-block; margin-top: 8px; font-size: 13px; color: #455A64; text-decoration: none; text-align:center; width:100%; }
+    .back-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="title-block">
+    <div class="eyebrow">Full Timed Mock Exam</div>
+    <h1>AEM Business Practitioner Expert</h1>
+  </div>
+  <div><span id="timerDisplay">⏱ 70:00</span></div>
+</header>
+
+<div class="progress-track">
+  <div class="progress-fill" id="progressFill" style="width:0%"></div>
+</div>
+
+<div class="container">
+  <div id="app"></div>
+</div>
+
+<script>
+const TIMER_SECONDS = 70 * 60;
+let timerInterval = null;
+let secondsLeft = TIMER_SECONDS;
+let questions = [];
+let idx = 0;
+let selected = [];
+let answered = false;
+let score = 0;
+let domainMap = {};
+let answers = []; // store all selected answers for review
+
+const ALL_QUESTIONS = [
+  {
+    id: 1, type: 'mc', domain: 'Authoring',
+    question: 'A marketing team needs to prepare an entire section of the AEM Site for an upcoming campaign launch — editing multiple pages simultaneously without affecting the live site. Which AEM feature is designed for this?',
+    options: ['Multi-Site Manager (MSM) with a new Live Copy', 'A Publication Workflow set to a future activation date', 'AEM Launches', 'Creating draft versions of each page separately'],
+    correct: [2],
+    explanation: 'AEM Launches let teams create a parallel "copy" of existing pages for coordinated editing without touching live content. On launch day, the Launch is promoted — pushing all changes at once. MSM handles multi-site inheritance, not pre-production editing.'
+  },
+  {
+    id: 2, type: 'mc', domain: 'Multi-Site Management',
+    question: 'An international company has one primary English site and needs independent French, German, and Japanese versions. Regional teams will translate content but share no structural inheritance from the English site. Which feature is most appropriate?',
+    options: ['MSM Live Copies — roll out from the English blueprint', 'Language Copy — create locale-specific copies for independent translation', 'Experience Fragments per locale exported to each regional site', 'Content Fragments via GraphQL with a locale filter parameter'],
+    correct: [1],
+    explanation: 'Language Copy creates locale-organized site copies (e.g., /content/site/fr) for independent translation. It integrates with AEM translation workflows. MSM is for inheriting and synchronizing from a master — useful when you want shared global content with local overrides, not when sites are fully independent per locale.'
+  },
+  {
+    id: 3, type: 'multi', domain: 'Authoring', selectCount: 2,
+    question: 'Which two statements correctly distinguish "Quick Publish" from "Manage Publication" in AEM Sites?',
+    options: ['Quick Publish activates selected pages immediately with no approval step', 'Manage Publication supports scheduled future activation and can trigger a workflow review', 'Quick Publish automatically publishes all referenced assets and child pages', 'Manage Publication is only available to the "administrators" group'],
+    correct: [0, 1],
+    explanation: 'Quick Publish = immediate activation, no scheduling or approval. Manage Publication = a wizard supporting scheduled activation time and optional workflow review. Both require authors to manually include referenced assets. Manage Publication is available to any author with replicate rights.'
+  },
+  {
+    id: 4, type: 'mc', domain: 'Authoring',
+    question: 'An editor accidentally deleted an important paragraph from a draft page and saved. The page has not yet been published. How can the content be recovered?',
+    options: ['Contact the AEM administrator to restore from a JCR backup', 'Open the page in CRXDE Lite and re-enter deleted node properties', 'Use Timewarp to restore the published version', 'Open the Timeline panel and restore a previous saved version'],
+    correct: [3],
+    explanation: 'AEM automatically creates versions when authors save. The Timeline panel in the Sites console lets authors view and restore previous versions without administrator involvement. Timewarp shows how the published page looked at a past point in time — it cannot restore unpublished draft changes.'
+  },
+  {
+    id: 5, type: 'mc', domain: 'Configuration',
+    question: 'A content author wants the URL "/spring-sale" to redirect visitors to the actual page at "/content/mysite/en/promotions/spring-2024". Where is this configured in AEM?',
+    options: ['Tools > Cloud Services > URL Redirects', 'Dispatcher configuration: rewrite rules in httpd.conf', 'Page Properties > Advanced tab > Vanity URL field', 'OSGi Configuration > Sling URL Mapping Service'],
+    correct: [2],
+    explanation: 'Vanity URLs are configured per page in Page Properties > Advanced tab. Authors — not developers — can set short, memorable URLs that redirect to the canonical page. Dispatcher and OSGi approaches exist but require developer/administrator involvement and are not the author-facing mechanism.'
+  },
+  {
+    id: 6, type: 'mc', domain: 'Multi-Site Management',
+    question: 'In an MSM Live Copy setup, a regional editor needs to update a heading on one page without the next rollout overwriting their change. What should they do?',
+    options: ['Publish the page before the rollout runs', 'Delete and recreate the page outside the Live Copy structure', 'Cancel inheritance on that specific component before editing', 'Clone the page to a path outside the Live Copy hierarchy'],
+    correct: [2],
+    explanation: 'MSM inheritance can be cancelled at the page, component, or property level using the cancel inheritance icon in the component toolbar. Once cancelled, that element is no longer overwritten during rollouts. Simply editing without cancelling will cause the next rollout to overwrite the local change.'
+  },
+  {
+    id: 7, type: 'multi', domain: 'Multi-Site Management', selectCount: 2,
+    question: 'Which two are valid MSM rollout triggers available in a Rollout Configuration?',
+    options: ['On Modification — rolls out when the blueprint is saved as a draft', 'On Activation — rolls out when the blueprint page is published', 'On Translation — rolls out when a language copy is finalized', 'On Request — author manually triggers the rollout from blueprint or Live Copy'],
+    correct: [1, 3],
+    explanation: '"On Activation" propagates changes only when blueprint content is published — preventing unintended draft rollouts. "On Request" is manually triggered for controlled deployments. "On Modification" exists but risks propagating unpublished drafts. "On Translation" is not a standard MSM rollout trigger type.'
+  },
+  {
+    id: 8, type: 'mc', domain: 'Workflows',
+    question: 'A content author opens their AEM Inbox and sees a task labeled "Legal Review Required." What is the most likely source of this task?',
+    options: ['An automated email notification from AEM Notification Settings', 'A Participant Step in a running workflow assigned to this user or group', 'A CUG restriction on a page the author attempted to access', 'An MSM rollout conflict requiring manual resolution'],
+    correct: [1],
+    explanation: 'The AEM Inbox receives tasks assigned via Participant Steps (or Dialog Participant Steps) in running workflows. When a workflow reaches a Participant Step assigned to a user or group, a task appears in their Inbox. Authors must complete the task for the workflow to advance. MSM conflicts, CUG restrictions, and email notifications do not create Inbox items.'
+  },
+  {
+    id: 9, type: 'mc', domain: 'Assets',
+    question: 'A graphic designer works in Photoshop and InDesign and needs to access, check out, and check in AEM Assets directly from those Creative Cloud applications. Which Adobe tool enables this?',
+    options: ['Adobe Bridge — connects Creative Cloud apps to AEM', 'AEM Desktop App — mounts the DAM as a local network drive', 'Adobe Asset Link — a CC panel embedded inside Photoshop, Illustrator, and InDesign', 'Brand Portal — provides browser-based download access for external users'],
+    correct: [2],
+    explanation: 'Adobe Asset Link is a Creative Cloud plugin that appears as a panel inside Photoshop, Illustrator, and InDesign. Designers can search, browse, place, check out, and check in AEM Assets without leaving their creative app. AEM Desktop App mounts the DAM as a network drive — useful but not embedded in CC apps. Brand Portal is for external sharing.'
+  },
+  {
+    id: 10, type: 'multi', domain: 'Assets', selectCount: 2,
+    question: 'Which two statements about AEM Assets Collections are correct?',
+    options: ['A Collection groups assets for sharing without physically relocating them from /content/dam', 'Collections physically move assets into a new folder structure', 'A private Collection is visible only to its creator by default', 'Collections can only contain image assets — video and documents are excluded'],
+    correct: [0, 2],
+    explanation: 'Collections are virtual groupings — they reference assets by path without moving them. This lets users curate cross-folder sets for review, download, or sharing. A private Collection is visible only to its creator; they can share it with specific users or groups. Collections can contain any asset type.'
+  },
+  {
+    id: 11, type: 'mc', domain: 'Assets',
+    question: 'Smart Tags apply generic descriptive tags correctly, but the brand\'s custom product category names are never suggested. What is the most likely missing step?',
+    options: ['The Metadata Schema has not been updated to include a Tags field', 'Smart Tags Training has not been run for the brand\'s custom taxonomy', 'The Processing Profile does not include a Smart Tags rendition step', 'Dynamic Media must be enabled before custom Smart Tags can apply'],
+    correct: [1],
+    explanation: 'Out-of-the-box Smart Tags use Adobe Sensei\'s generic model. For custom terminology, a training process must be completed: provide example images tagged with your custom terms, train the model, and it learns to apply those tags automatically. This is separate from Metadata Schemas and Processing Profiles.'
+  },
+  {
+    id: 12, type: 'mc', domain: 'Assets',
+    question: 'A DAM administrator needs to build a structured taxonomy with branded namespaces (e.g., "Product > Apparel > Jackets"). Where is the tag hierarchy managed?',
+    options: ['Tools > Assets > Metadata Profiles', 'Tools > Tagging (stored under /content/cq:tags in the JCR)', 'Tools > Sites > ContextHub Segments', 'Tools > General > Configuration Browser (/conf)'],
+    correct: [1],
+    explanation: 'Tags are managed via Tools > Tagging and stored under /content/cq:tags. Namespaces are top-level nodes; child tags nest beneath them. Tags can be applied to both Assets and Sites content and are searchable via OmniSearch. Metadata Profiles control DAM metadata fields; ContextHub handles personalization segments.'
+  },
+  {
+    id: 13, type: 'mc', domain: 'Assets',
+    question: 'A DAM administrator wants to demonstrate the ROI of AEM Assets to leadership by showing which assets are most actively used on published pages. Which feature provides this data?',
+    options: ['Processing Profile metrics in Tools > Assets', 'Asset Insights — shows impressions and clicks when integrated with Adobe Analytics', 'The CRXDE jcr:lastModified property under /content/dam', 'Dispatcher cache hit rates for asset delivery URLs'],
+    correct: [1],
+    explanation: 'Asset Insights integrates with Adobe Analytics to track impressions and clicks on assets embedded in AEM pages. Data surfaces directly in the Assets UI, showing which assets perform best. The other options do not provide business-level usage insights about how assets are consumed.'
+  },
+  {
+    id: 14, type: 'multi', domain: 'Components', selectCount: 2,
+    question: 'Which two statements correctly describe the difference between AEM Core Components and Foundation Components?',
+    options: ['Core Components are actively maintained by Adobe; Foundation Components are legacy and no longer enhanced', 'Core Components are delivered via a Maven dependency and not bundled with AEM by default', 'Foundation Components support the Style System; Core Components do not', 'Core Components include an Adaptive Forms builder that Foundation Components lack'],
+    correct: [0, 1],
+    explanation: 'Core Components are Adobe\'s modern, actively maintained component library released independently via GitHub/Maven. Foundation Components were AEM\'s original OOTB components — they are in maintenance mode with no new features. Both types support the Style System in modern AEM versions.'
+  },
+  {
+    id: 15, type: 'mc', domain: 'Architecture',
+    question: 'An AEM developer needs to change the rendering behavior of an OOTB AEM component. The recommended approach avoids touching /libs. What should they do?',
+    options: ['Edit the component script in /libs directly via CRXDE Lite', 'Copy the component to /apps at the same relative path to override it via Sling Resource Resolution', 'Add an OSGi configuration to intercept rendering calls for the /libs component', 'Export the component JAR from the Felix console, modify it, and reinstall'],
+    correct: [1],
+    explanation: 'The /libs path is AEM\'s foundation and is overwritten by upgrades and service packs. Sling Resource Resolution checks /apps before /libs, so copying a component or script to /apps at the matching relative path safely overrides the /libs version — this is called an "overlay." The /apps copy contains only the necessary changes.'
+  },
+  {
+    id: 16, type: 'mc', domain: 'Configuration',
+    question: 'An AEMaaCS project needs different log level OSGi configurations for Author vs. Publish. Where should the author-specific configuration be placed in the Maven project?',
+    options: ['In the /conf folder alongside template and cloud service configurations', 'Under ui.config/…/osgiconfig/config.author/ in the Maven module', 'Uploaded via the Felix console on the Author instance', 'In a separate Maven module named "author-config"'],
+    correct: [1],
+    explanation: 'OSGi configurations in AEM Maven projects follow runmode folder naming: config/ (all), config.author/ (author only), config.publish/ (publish only). These live in the ui.config module and deploy via Cloud Manager. In AEMaaCS, the Felix console cannot be used for persistent configuration changes.'
+  },
+  {
+    id: 17, type: 'mc', domain: 'Configuration',
+    question: 'A global company uses AEM Language Copy to manage 8 regional sites. Some content needs professional human translation; other content needs machine translation for speed. Which AEM capability supports both approaches?',
+    options: ['MSM rollout configurations with a "Translate" trigger', 'AEM Translation Integration Framework — connects to both machine translation providers and human TMS platforms', 'Content Fragments with built-in translation variations', 'Adobe Campaign integration for multilingual content delivery'],
+    correct: [1],
+    explanation: 'AEM\'s Translation Integration Framework (TIF) supports configuring different translation connectors per site or path. Machine translation (Google Translate, DeepL) and human Translation Management Systems can be configured and applied selectively. The framework routes content through the appropriate connector via translation projects.'
+  },
+  {
+    id: 18, type: 'mc', domain: 'Setup & Implementation',
+    question: 'A developer installs a content package on the Author instance via Package Manager and wants the content immediately available on Publish. Which Package Manager action achieves this in one step?',
+    options: ['Copy — creates a duplicate of the package on Publish', 'Replicate — publishes all content in the package to Publish via the replication agent', 'Export — sends the package file to Publish via FTP', 'Sync — mirrors Author and Publish JCR states'],
+    correct: [1],
+    explanation: '"Replicate" in Package Manager activates all content in the installed package to the Publish instance through the default replication agent — a bulk publish of everything the package contains. This is commonly used for initial content migrations.'
+  },
+  {
+    id: 19, type: 'tf', domain: 'AEMaaCS',
+    question: 'CRXDE Lite can be used to make persistent JCR changes to /apps in a production AEM as a Cloud Service environment.',
+    options: ['True', 'False'],
+    correct: [1],
+    explanation: 'False. CRXDE Lite is disabled in AEMaaCS production environments. In non-production environments it exists for debugging, but changes to /apps are temporary — overwritten by the next Cloud Manager deployment. All persistent /apps changes must go through the CI/CD pipeline.'
+  },
+  {
+    id: 20, type: 'mc', domain: 'AEMaaCS',
+    question: 'A customer is migrating their AEM 6.5 on-premise installation to AEM as a Cloud Service. Which Adobe tool is purpose-built for migrating existing content and assets at scale?',
+    options: ['Package Manager — export from 6.5 and install on AEMaaCS', 'Content Transfer Tool (CTT) — migrates content directly from AEM 6.5 to AEMaaCS', 'Cloud Manager Content Import — ZIP upload via the Cloud Manager UI', 'Adobe I/O File Storage API — transfers JCR binaries via REST'],
+    correct: [1],
+    explanation: 'The Content Transfer Tool (CTT) is Adobe\'s official migration utility. It connects to the source AEM 6.5 instance, extracts content including assets, and ingests it into AEMaaCS. It handles large repositories with incremental "top-up" runs. Package Manager cannot be used for production AEMaaCS content migrations at scale.'
+  },
+  {
+    id: 21, type: 'mc', domain: 'AEMaaCS',
+    question: 'A developer wants to quickly test OSGi bundle changes in AEMaaCS without waiting 30+ minutes for a full Cloud Manager pipeline. Which feature is designed for this?',
+    options: ['CRXDE Lite — push bundle changes directly to the Author instance', 'Rapid Development Environments (RDEs) — allow direct code deployment for fast iteration', 'A Front-End pipeline — deploys in under 10 minutes', 'AEM Developer Console — allows bundle installation without a full pipeline'],
+    correct: [1],
+    explanation: 'Rapid Development Environments (RDEs) allow developers to push code changes directly using the AEM CLI — changes deploy in seconds to minutes without a full Cloud Manager pipeline run. RDEs are for active development and are reset periodically. Front-end pipelines only handle UI resources, not Java/OSGi changes.'
+  },
+  {
+    id: 22, type: 'multi', domain: 'AEMaaCS', selectCount: 2,
+    question: 'Which two JCR paths in AEM as a Cloud Service are considered "mutable" — changeable at runtime by authors or automated processes?',
+    options: ['/apps — application code and component definitions', '/content — authored page and asset content', '/libs — Adobe-provided foundation libraries', '/conf — configuration data created via the AEM UI (templates, cloud services)'],
+    correct: [1, 3],
+    explanation: '/apps and /libs are immutable in AEMaaCS — read-only at runtime, changeable only via Cloud Manager pipelines. /content (pages, assets) and /conf (templates, policies, cloud configs) are mutable — authors and tools can modify them at runtime. This distinction drives most AEMaaCS architecture decisions.'
+  },
+  {
+    id: 23, type: 'mc', domain: 'AEMaaCS',
+    question: 'In AEMaaCS, what replaces the Felix OSGi console for inspecting bundle status, active services, and running Sling queries?',
+    options: ['Cloud Manager > Environments > Logs', 'AEM Developer Console (accessed via Cloud Manager)', 'CRXDE Lite > /system/console path', 'AEM Author > Tools > OSGi Console'],
+    correct: [1],
+    explanation: 'AEMaaCS provides the AEM Developer Console (accessible via Cloud Manager) as the replacement for the Felix console. It provides bundle status, OSGi configuration inspection, Sling request resolution, and query execution for non-production environments. The /system/console path is blocked in AEMaaCS.'
+  },
+  {
+    id: 24, type: 'mc', domain: 'AEMaaCS',
+    question: 'In AEM as a Cloud Service, what replaces the "DAM Update Asset" workflow for generating asset renditions after upload?',
+    options: ['Dynamic Media Processing Profiles — now server-side rendered on demand', 'Cloud Manager Asset Pipeline — triggered on each code deployment', 'Asset Compute Service — a cloud-native extensible service for rendition generation at scale', 'AEM Dispatcher pre-rendering — generates static renditions on first request'],
+    correct: [2],
+    explanation: 'The "DAM Update Asset" workflow is replaced in AEMaaCS by the Asset Compute Service — a cloud-native microservice using Adobe I/O Runtime workers. It processes assets asynchronously at scale. Processing Profiles still exist as the configuration layer, but the execution engine is Asset Compute, not a traditional workflow.'
+  },
+  {
+    id: 25, type: 'mc', domain: 'Headless',
+    question: 'A mobile app needs to retrieve product data from AEM Content Fragments. A Content Fragment Model defines fields: productName (text), price (number), image (asset). How does the app get structured JSON?',
+    options: ['The app renders AEM pages as HTML and scrapes the product data', 'The app queries AEM\'s GraphQL API using the Content Fragment model schema', 'The app uses the Sling GET API with .json on the Content Fragment page path', 'The app calls the AEM Assets HTTP API which auto-serializes all CFs as JSON'],
+    correct: [1],
+    explanation: 'AEM exposes Content Fragments via a GraphQL API. The Content Fragment Model automatically generates the GraphQL schema — each model becomes a queryable type. The app queries for fragments of the model type and receives structured JSON. This is the recommended headless delivery pattern.'
+  },
+  {
+    id: 26, type: 'mc', domain: 'Headless',
+    question: 'An AEM development team wants GraphQL query results to be cacheable by the Dispatcher and CDN, and wants to avoid exposing flexible ad-hoc query capability publicly. What feature enables this?',
+    options: ['GraphQL Subscriptions — the server pushes updates to the client', 'Persisted Queries — pre-stored queries executed via HTTP GET, cacheable by Dispatcher', 'Content Fragment Variations — pre-rendered snapshots cached at the CF level', 'AEM GraphQL Federation — routes queries across multiple AEM instances'],
+    correct: [1],
+    explanation: 'Persisted Queries are GraphQL queries saved on the AEM server and retrieved via GET requests. Since they use GET (not POST), the Dispatcher and CDN can cache responses — critical for production performance. Clients reference a persisted query by a short path rather than sending the full query body. This also limits arbitrary query exposure.'
+  },
+  {
+    id: 27, type: 'mc', domain: 'Headless',
+    question: 'A team wants to build an AEM-powered React SPA while still giving content authors in-context visual editing in the AEM authoring UI. Which AEM feature enables this?',
+    options: ['Content Fragments via GraphQL — authors edit in CF editor, React renders the output', 'AEM SPA Editor — provides in-context authoring for React/Angular SPAs via the JavaScript SDK', 'HTL-based components that toggle between server-rendered and client-rendered modes', 'AEM Style System — applies CSS classes that React components consume for dynamic rendering'],
+    correct: [1],
+    explanation: 'The AEM SPA Editor bridges traditional AEM authoring with JavaScript SPAs. Using the @adobe/aem-react-editable-components SDK, components become editable in the AEM Author UI while rendering client-side. The SPA fetches page structure as JSON from AEM Content Services. This differs from fully headless where authors cannot see the final layout in context.'
+  },
+  {
+    id: 28, type: 'mc', domain: 'Configuration',
+    question: 'A marketing team wants to track page views and CTA clicks across AEM Sites using Adobe Analytics. What is the recommended modern integration approach?',
+    options: ['Embed the Analytics JS directly in the AEM page template via HTL', 'Connect AEM to Adobe Experience Platform Tags (Launch) via Cloud Services > Launch integration', 'Configure Analytics directly in AEM via Tools > Cloud Services > Adobe Analytics (legacy DTM)', 'Use a Sling POST servlet to push events directly to the Analytics API on each page load'],
+    correct: [1],
+    explanation: 'The recommended approach is connecting AEM to Adobe Experience Platform Tags (Launch) via the AEM Cloud Services integration. Tags manages the Analytics deployment and tracking rules without code changes. The connection is configured in AEM Cloud Services and attached to pages via Page Properties. The legacy direct Analytics cloud service is not the recommended modern pattern.'
+  },
+  {
+    id: 29, type: 'mc', domain: 'Forms',
+    question: 'An AEM Forms adaptive form must send submitted data to a confirmation email AND a backend REST API for CRM processing. Which configuration handles post-submission behavior?',
+    options: ['Form Data Model — configure two output bindings: email and REST', 'Submit Action — defines what happens when the form is submitted', 'Workflow Launcher — triggers on form submission and routes to two parallel steps', 'Core Component Dialog — add "Send Email" and "REST Call" in component properties'],
+    correct: [1],
+    explanation: 'Submit Actions define what AEM Forms does when a user submits an adaptive form. Available actions include Send Email, Invoke a REST endpoint, Submit to AEM workflow, Save to CRX, and more. Multiple actions can be chained. The Form Data Model handles data mapping; the Submit Action handles post-submission routing.'
+  },
+  {
+    id: 30, type: 'mc', domain: 'Forms',
+    question: 'A government agency requires a tamper-proof PDF snapshot of every submitted adaptive form for audit and compliance purposes. Which AEM Forms feature provides this automatically on submission?',
+    options: ['Form Data Model with a PDF output binding', 'Document of Record (DoR) — auto-generated PDF snapshot on submission', 'AEM Assets Processing Profile configured to convert form submissions to PDF', 'Adobe Sign integration — sends data for e-signature and generates the PDF'],
+    correct: [1],
+    explanation: 'Document of Record (DoR) is an AEM Forms feature that generates a PDF rendering of the submitted form data at submission time. It faithfully represents the form as filled by the user, can be emailed and archived, and is designed for compliance and audit trail requirements — common in government and regulated industries.'
+  },
+  {
+    id: 31, type: 'mc', domain: 'Workflows',
+    question: 'A workflow requires a reviewer to approve content AND enter mandatory "Review Notes" before the workflow continues. Which workflow step type supports this?',
+    options: ['Participant Step — sends a task to the reviewer\'s Inbox for approve/reject', 'Dialog Participant Step — sends the task AND presents a custom dialog to collect additional data', 'Process Step — runs an automated script that collects notes from metadata', 'OR Split — routes to approval or notes-required branch based on content type'],
+    correct: [1],
+    explanation: 'A Dialog Participant Step works like a Participant Step (task appears in Inbox) but also renders a custom Touch UI dialog for the reviewer to fill in before completing. The dialog data is saved to the workflow payload. Use Participant Step for simple approve/reject; use Dialog Participant Step when you need to collect additional input during the workflow.'
+  },
+  {
+    id: 32, type: 'mc', domain: 'Setup & Implementation',
+    question: 'An author reports that pages published successfully on Friday are not showing on the live site Monday morning, but pages published Monday ARE showing. Where should an administrator look first?',
+    options: ['AEM Author > Tools > Operations > Audit Log — search Friday publish events', 'AEM Author > Tools > Deployment > Replication > Agents on Author — check the Replication Queue', 'Dispatcher access logs to see if Friday requests reached Publish', 'AEM Publish > Package Manager — check if Friday content packages were installed'],
+    correct: [1],
+    explanation: 'The Replication Queue on the Author instance is the first place to check. Items can get stuck due to network issues, Publish outages, or authentication failures. Stuck Friday items would explain why those pages are missing while Monday publications (queue cleared) work fine. The queue shows status of each pending or failed replication item.'
+  },
+  {
+    id: 33, type: 'mc', domain: 'Architecture',
+    question: 'A custom OSGi service in AEM needs to read content from the JCR at runtime. The developer is told NOT to use the admin session. What is the recommended approach?',
+    options: ['Create a "svc-myservice" user account and store credentials in OSGi configuration', 'Use a Service User — a system account with minimal JCR permissions mapped to the bundle via Service User Mapping', 'Use the ResourceResolver Factory with anonymous access since OSGi services run inside AEM', 'Request administrator credentials from the customer AEM admin team for production use'],
+    correct: [1],
+    explanation: 'Service Users are non-interactive system accounts with purpose-limited JCR permissions, mapped to OSGi bundles via Service User Mapping. Using the admin session is a security anti-pattern (too broad) and is blocked in AEMaaCS. Service users follow least-privilege — the bundle gets only the JCR access it needs.'
+  },
+  {
+    id: 34, type: 'mc', domain: 'Architecture',
+    question: 'Content authors report that a newly deployed "Product Card" component is not visible in their page editor. The development team confirms the bundle is Active in the OSGi console. The template team has not been notified. Who should investigate, and where?',
+    options: ['A developer — check OSGi console to confirm the bundle is Active', 'A content author — edit page layout properties to add the component', 'A template author — open the Template Editor and add Product Card to the Layout Container policy', 'A DAM administrator — ensure component-associated images are in /content/dam'],
+    correct: [2],
+    explanation: 'Component visibility in the page editor is controlled by Template Policies. Even if a component is deployed and Active, it will not appear in the component browser unless explicitly allowed in the Layout Container policy of the template being used. The Template Author should open Template Editor > Structure mode > Layout Container > Edit Policy > add Product Card.'
+  },
+  {
+    id: 35, type: 'mc', domain: 'Governance',
+    question: 'A content operations team needs to ensure no AEM Sites page goes live without sign-off from a specific legal review group. Which AEM capability enforces this governance gate with no custom code?',
+    options: ['Dispatcher cache rules that block unreviewed URLs from public access', 'Replication agents with content-type filtering', 'A publish workflow with a mandatory Participant Step assigned to the legal review group', 'OSGi bundle configuration restricting publish permissions by content type'],
+    correct: [2],
+    explanation: 'Content governance gates are implemented through Workflows. A Participant Step assigned to the legal group ensures content cannot advance to the publish replication step until a member of that group approves it. Dispatcher and replication rules control delivery mechanics, not editorial governance approval gates.'
+  }
+];
+
+// ─── Timer ──────────────────────────────────────────────────────────────────
+function startTimer() {
+  secondsLeft = TIMER_SECONDS;
+  updateTimerDisplay();
+  timerInterval = setInterval(() => {
+    secondsLeft--;
+    updateTimerDisplay();
+    if (secondsLeft <= 0) {
+      clearInterval(timerInterval);
+      finishExam(true);
+    }
+  }, 1000);
+}
+
+function stopTimer() {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+}
+
+function updateTimerDisplay() {
+  const el = document.getElementById('timerDisplay');
+  if (!el) return;
+  const m = Math.floor(secondsLeft / 60);
+  const s = secondsLeft % 60;
+  el.textContent = `⏱ ${m}:${s.toString().padStart(2,'0')}`;
+  el.className = secondsLeft <= 300 ? 'danger' : secondsLeft <= 600 ? 'warning' : '';
+}
+
+// ─── Init ───────────────────────────────────────────────────────────────────
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function initDomains() {
+  domainMap = {};
+  questions.forEach(q => {
+    if (!domainMap[q.domain]) domainMap[q.domain] = { correct: 0, total: 0 };
+    domainMap[q.domain].total++;
+  });
+}
+
+function setProgress(pct) {
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+const LETTERS = ['A', 'B', 'C', 'D', 'E'];
+
+// ─── Start ──────────────────────────────────────────────────────────────────
+function renderStart() {
+  setProgress(0);
+  document.getElementById('timerDisplay').textContent = '⏱ 70:00';
+  document.getElementById('app').innerHTML = `
+    <div class="start-card">
+      <h2>Full Timed Mock Exam</h2>
+      <p class="description">35 new questions across all exam domains — questions you haven't seen in the practice quiz. No explanations during the exam; full review with explanations appears on the results screen.</p>
+      <div class="exam-rules">
+        <strong>Exam simulation rules:</strong><br>
+        • 70-minute countdown starts when you click Start<br>
+        • No per-question feedback — work through all questions, then review<br>
+        • Answers are locked once you advance to the next question<br>
+        • Timer expires → exam ends automatically
+      </div>
+      <div class="stat-row">
+        <div class="stat-box"><div class="num">35</div><div class="lbl">Questions</div></div>
+        <div class="stat-box"><div class="num">70</div><div class="lbl">Minutes</div></div>
+        <div class="stat-box"><div class="num">64%</div><div class="lbl">To pass (real exam)</div></div>
+      </div>
+      <button class="btn btn-primary" onclick="startExam()">Start Exam</button>
+    </div>
+  `;
+}
+
+function startExam() {
+  questions = shuffle(ALL_QUESTIONS);
+  idx = 0; score = 0; answers = [];
+  initDomains();
+  startTimer();
+  renderQuestion();
+}
+
+// ─── Question ───────────────────────────────────────────────────────────────
+function renderQuestion() {
+  const q = questions[idx];
+  const pct = (idx / questions.length) * 100;
+  setProgress(pct);
+
+  let hint = q.type === 'tf' ? 'True or False' : q.type === 'multi' ? `Select ${q.selectCount} answers` : 'Select one answer';
+  const optType = q.type === 'multi' ? 'square' : '';
+  const optionsHTML = q.options.map((opt, i) => `
+    <div class="option" id="opt-${i}" onclick="toggleOption(${i})">
+      <div class="opt-indicator ${optType}"><span class="opt-check">✓</span></div>
+      <span class="opt-label"><span class="opt-letter">${LETTERS[i]}.</span>${opt}</span>
+    </div>
+  `).join('');
+
+  document.getElementById('app').innerHTML = `
+    <div class="question-card">
+      <div class="q-meta">
+        <span class="q-counter">Question ${idx + 1} of ${questions.length}</span>
+        <span class="domain-tag">${q.domain}</span>
+      </div>
+      <div class="q-text">${q.question}</div>
+      <div class="q-hint">${hint}</div>
+      <div class="options">${optionsHTML}</div>
+      <div class="actions">
+        <div class="q-num-display">${idx + 1} / ${questions.length}</div>
+        <div>
+          <button class="btn btn-primary" id="nextBtn" onclick="advance()" disabled>
+            ${idx < questions.length - 1 ? 'Next →' : 'Finish Exam'}
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  selected = [];
+  answered = false;
+}
+
+function toggleOption(i) {
+  if (answered) return;
+  const q = questions[idx];
+  const el = document.getElementById(`opt-${i}`);
+  if (q.type === 'multi') {
+    if (selected.includes(i)) { selected = selected.filter(x => x !== i); el.classList.remove('selected'); }
+    else { selected.push(i); el.classList.add('selected'); }
+    document.getElementById('nextBtn').disabled = selected.length !== q.selectCount;
+  } else {
+    selected = [i];
+    document.querySelectorAll('.option').forEach((el2, j) => el2.classList.toggle('selected', j === i));
+    document.getElementById('nextBtn').disabled = false;
+  }
+}
+
+function advance() {
+  answered = true;
+  const q = questions[idx];
+  const sortSel = [...selected].sort((a,b)=>a-b);
+  const sortCor = [...q.correct].sort((a,b)=>a-b);
+  const correct = sortSel.length === sortCor.length && sortSel.every((v,i) => v === sortCor[i]);
+  if (correct) { score++; domainMap[q.domain].correct++; }
+  answers.push({ q, selected: [...selected], correct });
+
+  idx++;
+  if (idx >= questions.length) finishExam(false);
+  else renderQuestion();
+}
+
+// ─── Results ─────────────────────────────────────────────────────────────────
+function finishExam(timedOut) {
+  stopTimer();
+  setProgress(100);
+  document.getElementById('timerDisplay').textContent = '';
+
+  const answered_count = answers.length;
+  const pct = answered_count > 0 ? Math.round((score / questions.length) * 100) : 0;
+  let msg, msgColor;
+  if (pct >= 80)      { msg = 'Exam-ready. Strong performance across all domains.'; msgColor = '#2d9e47'; }
+  else if (pct >= 64) { msg = 'Passing range. Review the flagged topics before the real exam.'; msgColor = '#e07b00'; }
+  else                { msg = 'Below passing. Focus on the domains with the lowest scores below.'; msgColor = '#d93025'; }
+
+  const timedOutNote = timedOut ? `<div style="background:#fff3f2;border-left:3px solid #d93025;padding:10px 14px;border-radius:4px;font-size:14px;margin-bottom:20px;color:#555;">⏱ Time expired — ${answered_count} of ${questions.length} questions answered.</div>` : '';
+
+  const bdHTML = Object.entries(domainMap).map(([domain, data]) => {
+    const p = Math.round((data.correct / data.total) * 100);
+    const color = p >= 80 ? '#2d9e47' : p >= 60 ? '#e07b00' : '#d93025';
+    return `<div class="bd-item"><div class="bd-domain">${domain}</div><div class="bd-score" style="color:${color}">${data.correct}/${data.total} <span class="bd-of">${p}%</span></div></div>`;
+  }).join('');
+
+  const wrongReview = answers.filter(a => !a.correct).map(a => {
+    const { q, selected: sel } = a;
+    const selLabels = sel.map(i => LETTERS[i] + '. ' + q.options[i]).join(' | ');
+    const corLabels = q.correct.map(i => LETTERS[i] + '. ' + q.options[i]).join(' | ');
+    return `
+      <div class="review-item wrong">
+        <div class="review-q">${q.domain} — ${q.question}</div>
+        <div class="review-row"><span class="lbl">Your answer:</span>${selLabels || '(no answer)'}</div>
+        <div class="review-row"><span class="lbl">Correct:</span>${corLabels}</div>
+        <div class="review-exp">${q.explanation}</div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('app').innerHTML = `
+    <div class="results-card">
+      ${timedOutNote}
+      <div class="eyebrow">Mock Exam Complete</div>
+      <div class="big-score">${pct}%</div>
+      <div class="score-sub">${score} of ${questions.length} correct</div>
+      <div class="verdict-msg" style="color:${msgColor}">${msg}</div>
+      <div class="breakdown-section">
+        <h3>Score by Domain</h3>
+        <div class="breakdown-grid">${bdHTML}</div>
+      </div>
+      ${wrongReview ? `<div class="review-section"><h3 style="font-size:13px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;">Missed Questions — Review</h3>${wrongReview}</div>` : '<div style="text-align:center;color:#2d9e47;font-weight:700;font-size:16px;padding:20px 0;">Perfect score! 🎯</div>'}
+      <div class="results-actions">
+        <button class="btn btn-primary" onclick="renderStart()">Retake Exam</button>
+      </div>
+      <a class="back-link" href="javascript:history.back()">← Back to Study Tracker</a>
+    </div>
+  `;
+}
+
+renderStart();
+</script>
+</body>
+</html>
